@@ -5,8 +5,9 @@ using System.Globalization;
 using System.Linq;
 using System.Xml;
 using UnityEngine;
+using UnityEngine.Windows;
 
-public class NewBehaviourScript : MonoBehaviour
+public class TransformProjector : MonoBehaviour
 {
     public GameObject projector;
     public new GameObject camera;
@@ -14,7 +15,7 @@ public class NewBehaviourScript : MonoBehaviour
     void Start()    
     {
         XmlDocument doc = new XmlDocument();
-        doc.Load("c:\\Users\\strof\\Programovani\\BP\\UnityProjects\\AR_test_2\\calibration_result.xml");
+        doc.Load("c:/Users/strof/Programovani/Github/arcor2_sar/AR_test_2/calibration_result.xml");
 
         XmlNode transVectorNode = doc.DocumentElement.SelectSingleNode("/opencv_storage/translation/data");
         string transVectorData = transVectorNode.InnerText;
