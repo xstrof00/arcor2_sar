@@ -9,7 +9,7 @@ namespace Assets.Scripts.CalibrationData
         public CalibrationData calibrationData;
 
         XmlDocument calibrationDataXml = new XmlDocument();
-        calibrationDataXml.Load("c:/Users/strof/Programovani/Github/arcor2_sar/AR_test_2/calibration_result.xml");
+        calibrationDataXml.Load("c:/Users/strof/Programovani/Github/arcor2_sar/Calibration/calibration_result.xml");
         XmlNode translationVectorNode = doc.DocumentElement.SelectSingleNode("/opencv_storage/translation/data");
         string translationVectorData = translationVectorNode.InnerText;
         string[] parsedTranslationVector = translationVectorData.Trim().Split('\n', ' ');

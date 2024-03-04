@@ -2,7 +2,7 @@ import cv2
 import time 
 
 def capturePhoto():
-    cap = cv2.VideoCapture(2)
+    cap = cv2.VideoCapture(-1)
     time.sleep(0.5)
 
     if not cap.isOpened():

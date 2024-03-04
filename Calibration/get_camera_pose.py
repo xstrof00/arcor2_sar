@@ -3,6 +3,15 @@ import requests
 import io
 import cv2
 from PIL import Image
+import xml.etree.ElementTree as ET
+
+class CamParameters():
+    inverse: bool = False
+    cx: float = 0.0
+    cy: float = 0.0
+    fx: float = 0.0
+    fy: float = 0.0
+    distortionCoeffs: list = [0.0, 0.0, 0.0, 0.0, 0.0]
 
 class Position():
     x: float = 0.0
@@ -15,7 +24,7 @@ class Orientation():
     y: float = 0.0
     z: float = 0.0
     
-kinectPosition = Position()
+'''kinectPosition = Position()
 kinectOrientation = Orientation()
 
 kinectPose = {
@@ -30,16 +39,7 @@ kinectPose = {
         'z': kinectOrientation.z,
         'w': kinectOrientation.w
     }
-}
-
-cameraParameters = {
-    'inverse': False,
-    'fx': 626.6809,
-    'fy': 629.0327,
-    'cx': 627.1297,
-    'cy': 352.9711,
-    'distCoefs': [0.097203, 0.1358340, -0.00830756, -0.00814534, -0.5983313]
-}
+} '''   
 
 #Using API to take picture via Kinect and get its pose
 
@@ -65,9 +65,9 @@ print("Stopping kinect:", kinectStartResponse.status_code)
 kinectImage = Image.open(io.BytesIO(colorImageResponse.content))
 kinectImage.save('kinect_image2.png', format='PNG')
 
-    kinectCalibrateUrl = "http://192.168.104.100:5014/calibrate/camera"
-    kinectCalibrateResponse = requests.put(kinectCalibrateUrl, files={'image': colorImageResponse.content}, params=cameraParameters)
-    print("Calibrating kinect:", kinectCalibrateResponse.text)'''
+kinectCalibrateUrl = "http://192.168.104.100:5014/calibrate/camera"
+kinectCalibrateResponse = requests.put(kinectCalibrateUrl, files={'image': colorImageResponse.content}, params=cameraParameters)
+print("Calibrating kinect:", kinectCalibrateResponse.text)'''
 
 #Conneting to ARServer via ssh and taking a picture with kinect directly, gettting its pose with calibration API
 
@@ -91,7 +91,43 @@ def takePicture():
     else:
         print("Error occured while taking the picture.")
 
+def getCamIntrinsics():
+    xmlTree = ET.parse('calibration_result.xml')
+    root = xmlTree.getroot()
+    camInt = root.find('cam_int').findtext('data')
+    camIntString = str(camInt)
+    return camIntString
+
+def parseCamIntMatrix(camIntMatrix):
+    numbers = []
+    lines = camIntMatrix.strip().split('\n')
+    for line in lines:
+        values = line.strip().split(' ')
+        for value in values:
+            numbers.append(value)
+    return numbers
+
+def getCamDistCoefficients():
+    xmlTree = ET.parse('calibration_result.xml')
+    root = xmlTree.getroot()
+    camDistCoeffs = root.find('cam_dist').findtext('data')
+    camDistCoeffsString = str(camDistCoeffs)
+    return camDistCoeffsString
+
 if __name__ == "__main__":
+    camIntrinsicsMatrix = getCamIntrinsics()
+    camIntrinsicsArray = parseCamIntMatrix(camIntrinsicsMatrix)
+    camDistCoefficients = getCamDistCoefficients()
+
+    camParameters = CamParameters()
+    camParameters.cx = camIntrinsicsArray[2]
+    camParameters.cy = camIntrinsicsArray[5]
+    camParameters.fx = camIntrinsicsArray[0]
+    camParameters.fy = camIntrinsicsArray[4]
+    camParameters.distortionCoeffs = camDistCoefficients
+
+    jsonCamParameters = camParameters.__dict__
+
     kinectPicture = takePicture()
     kinectPictureImage = Image.fromarray(kinectPicture)
     kinectPictureBytes = io.BytesIO()
@@ -99,5 +135,9 @@ if __name__ == "__main__":
     binaryPicture = kinectPictureBytes.getvalue()
 
     kinectCalibrateUrl = "http://192.168.104.100:5014/calibrate/camera"
-    kinectCalibrateResponse = requests.put(kinectCalibrateUrl, files={'image': binaryPicture}, params=cameraParameters)
+    kinectCalibrateResponse = requests.put(kinectCalibrateUrl, files={'image': binaryPicture}, params=jsonCamParameters)
     print("Calibrating kinect:", kinectCalibrateResponse.text)
+
+    kinectCalibrationFile = "kinectCalibrationData.json "
+    with open(kinectCalibrationFile, 'w') as file:
+        file.write(kinectCalibrateResponse.text)
