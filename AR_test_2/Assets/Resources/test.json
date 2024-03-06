@@ -1,0 +1,16 @@
+{
+    "car":
+    {
+        "engine": "2",
+        "type": "longroof"
+    },
+    "house":
+    {
+        "doors": 
+        {
+            "number": "5",
+            "material": "wood"
+        },
+        "windows": "1"
+    }
+}

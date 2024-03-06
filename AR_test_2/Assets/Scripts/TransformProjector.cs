@@ -1,21 +1,17 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Xml;
 using UnityEngine;
-using UnityEngine.Windows;
 
 public class TransformProjector : MonoBehaviour
 {
     public GameObject projector;
-    public new GameObject camera;
+    public GameObject kinect;
     // Start is called before the first frame update
     void Start()    
     {
         XmlDocument doc = new XmlDocument();
-        doc.Load("c:/Users/strof/Programovani/Github/arcor2_sar/AR_test_2/calibration_result.xml");
+        doc.Load("c:/Users/strof/Programovani/Github/arcor2_sar/Calibration/calibration_result.xml");
 
         XmlNode transVectorNode = doc.DocumentElement.SelectSingleNode("/opencv_storage/translation/data");
         string transVectorData = transVectorNode.InnerText;
@@ -25,7 +21,7 @@ public class TransformProjector : MonoBehaviour
             (float.Parse(parsedTransVector[0], CultureInfo.InvariantCulture.NumberFormat) * (-1) / 100),
             (float.Parse(parsedTransVector[1], CultureInfo.InvariantCulture.NumberFormat) * (-1) / 100),
             (float.Parse(parsedTransVector[2], CultureInfo.InvariantCulture.NumberFormat) * (-1) / 100)
-        ) + camera.transform.position;
+        ) + kinect.transform.position;
 
         XmlNode rotationMatrixNode = doc.DocumentElement.SelectSingleNode("/opencv_storage/rotation/data");
         string rotationMatrixData = rotationMatrixNode.InnerText;
@@ -46,16 +42,9 @@ public class TransformProjector : MonoBehaviour
                                               0f));
         rotationMatrix.SetRow(3, new Vector4(0f, 0f, 0f, 0f));
 
-
-        //TODO - Check if I need to create the 3rd vector "right" aswell
-
         Vector3 forward = rotationMatrix.GetColumn(2);
         Vector3 up = rotationMatrix.GetColumn(1);
-        //Vector3 right = rotationMatrix.GetColumn(0); 
 
-        /*Quaternion quaternionRotation = Quaternion.FromToRotation(Vector3.forward, forward)
-                                         * Quaternion.FromToRotation(Vector3.up, up)
-                                         * Quaternion.FromToRotation(Vector3.right, right);*/
         Quaternion quaternionRotation = Quaternion.LookRotation(forward, up);
 
         projector.transform.rotation = quaternionRotation;
