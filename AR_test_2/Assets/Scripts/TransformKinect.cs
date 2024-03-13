@@ -41,26 +41,8 @@ public class TransformKinect : MonoBehaviour
     {
         KinectData kinectData = JsonUtility.FromJson<KinectData>(jsonFile.text);
 
-        Vector3 kinectTranslation = new Vector3(
-            kinectData.pose.position.x * -1 * 10,
-            kinectData.pose.position.y * -1 * 10,
-            kinectData.pose.position.z * -1 * 10
-        );
-
-        Quaternion kinectRotation = new Quaternion(
-            kinectData.pose.orientation.x,
-            kinectData.pose.orientation.y,
-            kinectData.pose.orientation.z,
-            kinectData.pose.orientation.w
-        );
-
-        kinect.transform.position = kinectTranslation;
-        kinect.transform.rotation = kinectRotation;
-
-        Quaternion flipRotation = Quaternion.Euler(180f, 0f, 0f);
-
-        kinect.transform.rotation *= flipRotation;
-        
+        SetKinectPosition(kinectData);
+        SetKinectRotation(kinectData);
     }
 
     // Update is called once per frame
@@ -68,5 +50,28 @@ public class TransformKinect : MonoBehaviour
     {
         
     }
+    
+    void SetKinectPosition(KinectData kinectData)
+    {
+        Vector3 kinectTranslation = new Vector3(
+            kinectData.pose.position.x * -1 * 10,
+            kinectData.pose.position.y * -1 * 10,
+            kinectData.pose.position.z * -1 * 10
+        );
+        kinect.transform.position = kinectTranslation;
+    }
 
+    void SetKinectRotation(KinectData kinectData)
+    {
+        Quaternion kinectRotation = new Quaternion(
+            kinectData.pose.orientation.x,
+            kinectData.pose.orientation.y,
+            kinectData.pose.orientation.z,
+            kinectData.pose.orientation.w
+        );
+
+        Quaternion flipRotation = Quaternion.Euler(180f, 0f, 180f);
+
+        kinect.transform.rotation = kinectRotation * flipRotation;
+    }
 }

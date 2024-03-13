@@ -2,31 +2,64 @@ using System.Globalization;
 using System.Linq;
 using System.Xml;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class TransformProjector : MonoBehaviour
 {
     public GameObject projector;
     public GameObject kinect;
+    public TextAsset xmlFile;
+    public GameObject arUcoMarker;
+
     // Start is called before the first frame update
-    void Start()    
+    void Start()
+    {
+        //XmlDocument xmlDoc = LoadXmlDoc();
+        XmlDocument xmlDoc = new XmlDocument();
+        xmlDoc.LoadXml(xmlFile.text);
+
+        SetProjectorPosition(xmlDoc);
+        SetProjectorRotation(xmlDoc);
+
+        Camera camera = projector.GetComponent<Camera>();
+        Screen.SetResolution(1920, 1080, true);
+
+        arUcoMarker.SetActive(false);
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+
+    }
+
+    /*XmlDocument LoadXmlDoc()
     {
         XmlDocument doc = new XmlDocument();
-        doc.Load("c:/Users/strof/Programovani/Github/arcor2_sar/Calibration/calibration_result.xml");
+        doc.Load("../Calibration/calibration_result.xml");
+        return doc;
+    }*/
 
-        XmlNode transVectorNode = doc.DocumentElement.SelectSingleNode("/opencv_storage/translation/data");
-        string transVectorData = transVectorNode.InnerText;
-        string[] parsedTransVector = transVectorData.Trim().Split('\n', ' ');
-        parsedTransVector = parsedTransVector.Where(x => !string.IsNullOrEmpty(x)).ToArray();
-        projector.transform.position = new Vector3(
+    void SetProjectorPosition(XmlDocument xmlDoc)
+    { 
+        XmlNode transVectorNode = xmlDoc.DocumentElement.SelectSingleNode("/opencv_storage/translation/data");
+        string[] parsedTransVector = GetStringFromXmlNode(transVectorNode);
+
+        Vector3 projectorTransVector = new Vector3(
             (float.Parse(parsedTransVector[0], CultureInfo.InvariantCulture.NumberFormat) * (-1) / 100),
             (float.Parse(parsedTransVector[1], CultureInfo.InvariantCulture.NumberFormat) * (-1) / 100),
             (float.Parse(parsedTransVector[2], CultureInfo.InvariantCulture.NumberFormat) * (-1) / 100)
         ) + kinect.transform.position;
 
-        XmlNode rotationMatrixNode = doc.DocumentElement.SelectSingleNode("/opencv_storage/rotation/data");
-        string rotationMatrixData = rotationMatrixNode.InnerText;
-        string[] parsedRotationMatrix = rotationMatrixData.Trim().Split('\n', ' ');
-        parsedRotationMatrix = parsedRotationMatrix.Where(x => !string.IsNullOrEmpty(x)).ToArray();
+        projector.transform.position = projectorTransVector;
+    }
+
+    void SetProjectorRotation(XmlDocument xmlDoc)
+    {
+        XmlNode rotationMatrixNode = xmlDoc.DocumentElement.SelectSingleNode("/opencv_storage/rotation/data");
+        string[] parsedRotationMatrix = GetStringFromXmlNode(rotationMatrixNode);
+
         Matrix4x4 rotationMatrix = new Matrix4x4();
         rotationMatrix.SetRow(0, new Vector4(float.Parse(parsedRotationMatrix[0], CultureInfo.InvariantCulture.NumberFormat),
                                               float.Parse(parsedRotationMatrix[1], CultureInfo.InvariantCulture.NumberFormat),
@@ -47,12 +80,14 @@ public class TransformProjector : MonoBehaviour
 
         Quaternion quaternionRotation = Quaternion.LookRotation(forward, up);
 
-        projector.transform.rotation = quaternionRotation;
+        projector.transform.rotation = quaternionRotation * kinect.transform.rotation;
     }
 
-    // Update is called once per frame
-    void Update()
+    string[] GetStringFromXmlNode(XmlNode xmlNode)
     {
-
+        string data = xmlNode.InnerText;
+        string[] parsedData = data.Trim().Split('\n', ' ');
+        parsedData = parsedData.Where(x => !string.IsNullOrEmpty(x)).ToArray();
+        return parsedData;
     }
 }
