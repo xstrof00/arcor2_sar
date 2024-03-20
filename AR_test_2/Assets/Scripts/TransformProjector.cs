@@ -19,8 +19,8 @@ public class TransformProjector : MonoBehaviour
         XmlDocument xmlDoc = new XmlDocument();
         xmlDoc.LoadXml(xmlFile.text);
 
-        SetProjectorPosition(xmlDoc);
         SetProjectorRotation(xmlDoc);
+        SetProjectorPosition(xmlDoc);
 
         Camera camera = projector.GetComponent<Camera>();
         Screen.SetResolution(1920, 1080, true);
@@ -40,7 +40,7 @@ public class TransformProjector : MonoBehaviour
         doc.Load("../Calibration/calibration_result.xml");
         return doc;
     }*/
-
+    
     void SetProjectorPosition(XmlDocument xmlDoc)
     { 
         XmlNode transVectorNode = xmlDoc.DocumentElement.SelectSingleNode("/opencv_storage/translation/data");
@@ -73,14 +73,18 @@ public class TransformProjector : MonoBehaviour
                                               float.Parse(parsedRotationMatrix[7], CultureInfo.InvariantCulture.NumberFormat),
                                               float.Parse(parsedRotationMatrix[8], CultureInfo.InvariantCulture.NumberFormat),
                                               0f));
-        rotationMatrix.SetRow(3, new Vector4(0f, 0f, 0f, 0f));
+        rotationMatrix.SetRow(3, new Vector4(0f, 0f, 0f, 1f));
+
+        Matrix4x4 inverseRotationMatrix = rotationMatrix.inverse;
 
         Vector3 forward = rotationMatrix.GetColumn(2);
         Vector3 up = rotationMatrix.GetColumn(1);
 
-        Quaternion quaternionRotation = Quaternion.LookRotation(forward, up);
+        Quaternion projectorRotation = Quaternion.LookRotation(forward, up);
 
-        projector.transform.rotation = quaternionRotation * kinect.transform.rotation;
+        Quaternion inverseKinectRotation = Quaternion.Inverse(kinect.transform.rotation);
+
+        projector.transform.rotation = projectorRotation * kinect.transform.rotation;
     }
 
     string[] GetStringFromXmlNode(XmlNode xmlNode)
