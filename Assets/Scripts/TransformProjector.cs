@@ -1,9 +1,4 @@
-using System.Globalization;
-using System.Linq;
-using System.Xml;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 public class TransformProjector : MonoBehaviour
 {
@@ -15,14 +10,11 @@ public class TransformProjector : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        //XmlDocument xmlDoc = LoadXmlDoc();
-        XmlDocument xmlDoc = new XmlDocument();
-        xmlDoc.LoadXml(xmlFile.text);
+        ProjectorCalibrationData projCalibrationData = new ProjectorCalibrationData(xmlFile);
 
-        SetProjectorRotation(xmlDoc);
-        SetProjectorPosition(xmlDoc);
+        SetProjectorPosition(projCalibrationData);
+        SetProjectorRotation(projCalibrationData);   
 
-        Camera camera = projector.GetComponent<Camera>();
         Screen.SetResolution(1920, 1080, true);
 
         arUcoMarker.SetActive(false);
@@ -40,58 +32,23 @@ public class TransformProjector : MonoBehaviour
         doc.Load("../Calibration/calibration_result.xml");
         return doc;
     }*/
-    
-    void SetProjectorPosition(XmlDocument xmlDoc)
+
+    void SetProjectorPosition(ProjectorCalibrationData projCalibrationData)
     { 
-        XmlNode transVectorNode = xmlDoc.DocumentElement.SelectSingleNode("/opencv_storage/translation/data");
-        string[] parsedTransVector = GetStringFromXmlNode(transVectorNode);
-
-        Vector3 projectorTransVector = new Vector3(
-            (float.Parse(parsedTransVector[0], CultureInfo.InvariantCulture.NumberFormat) * (-1) / 100),
-            (float.Parse(parsedTransVector[1], CultureInfo.InvariantCulture.NumberFormat) * (-1) / 100),
-            (float.Parse(parsedTransVector[2], CultureInfo.InvariantCulture.NumberFormat) * (-1) / 100)
-        ) + kinect.transform.position;
-
-        projector.transform.position = projectorTransVector;
+        projector.transform.position = projCalibrationData.position + kinect.transform.position;
     }
 
-    void SetProjectorRotation(XmlDocument xmlDoc)
+    void SetProjectorRotation(ProjectorCalibrationData projCalibrationData)
     {
-        XmlNode rotationMatrixNode = xmlDoc.DocumentElement.SelectSingleNode("/opencv_storage/rotation/data");
-        string[] parsedRotationMatrix = GetStringFromXmlNode(rotationMatrixNode);
-
-        Matrix4x4 rotationMatrix = new Matrix4x4();
-        rotationMatrix.SetRow(0, new Vector4(float.Parse(parsedRotationMatrix[0], CultureInfo.InvariantCulture.NumberFormat),
-                                              float.Parse(parsedRotationMatrix[1], CultureInfo.InvariantCulture.NumberFormat),
-                                              float.Parse(parsedRotationMatrix[2], CultureInfo.InvariantCulture.NumberFormat),
-                                              0f));
-        rotationMatrix.SetRow(1, new Vector4(float.Parse(parsedRotationMatrix[3], CultureInfo.InvariantCulture.NumberFormat),
-                                              float.Parse(parsedRotationMatrix[4], CultureInfo.InvariantCulture.NumberFormat),
-                                              float.Parse(parsedRotationMatrix[5], CultureInfo.InvariantCulture.NumberFormat),
-                                              0f));
-        rotationMatrix.SetRow(2, new Vector4(float.Parse(parsedRotationMatrix[6], CultureInfo.InvariantCulture.NumberFormat),
-                                              float.Parse(parsedRotationMatrix[7], CultureInfo.InvariantCulture.NumberFormat),
-                                              float.Parse(parsedRotationMatrix[8], CultureInfo.InvariantCulture.NumberFormat),
-                                              0f));
-        rotationMatrix.SetRow(3, new Vector4(0f, 0f, 0f, 1f));
-
-        Matrix4x4 inverseRotationMatrix = rotationMatrix.inverse;
-
-        Vector3 forward = rotationMatrix.GetColumn(2);
-        Vector3 up = rotationMatrix.GetColumn(1);
+        Vector3 forward = projCalibrationData.rotation.GetColumn(2);
+        Vector3 up = projCalibrationData.rotation.GetColumn(1);
 
         Quaternion projectorRotation = Quaternion.LookRotation(forward, up);
 
+        Quaternion flipRotation = Quaternion.Euler(180f, 0f, 180f);
+
         Quaternion inverseKinectRotation = Quaternion.Inverse(kinect.transform.rotation);
-
+        Quaternion inverseProjectorRotation = Quaternion.Inverse(projectorRotation);
         projector.transform.rotation = projectorRotation * kinect.transform.rotation;
-    }
-
-    string[] GetStringFromXmlNode(XmlNode xmlNode)
-    {
-        string data = xmlNode.InnerText;
-        string[] parsedData = data.Trim().Split('\n', ' ');
-        parsedData = parsedData.Where(x => !string.IsNullOrEmpty(x)).ToArray();
-        return parsedData;
     }
 }

@@ -75,3 +75,5 @@ Calibration/.vscode
 Calibration/Procam-calibration
 Calibration/old_captures
 .vs
+Assets/Resources/arucomarker_position.txt
+Assets/Resources/arucomarker_position.txt.meta

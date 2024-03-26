@@ -1,48 +1,22 @@
 using UnityEngine;
 
-[System.Serializable]
-public class KinectData
-{
-    public Pose pose;
-    public double quality;
-}
-
-[System.Serializable]
-public class Pose
-{
-    public Orientation orientation;
-    public Position position;
-}
-
-[System.Serializable]
-public class Orientation
-{
-    public float w;
-    public float x;
-    public float y;
-    public float z;
-}
-
-[System.Serializable]
-public class Position
-{
-    public float x;
-    public float y;
-    public float z;
-}
-
 public class TransformKinect : MonoBehaviour
 {
     public GameObject kinect;
+    public TextAsset xmlFile;
     public TextAsset jsonFile;
 
     // Start is called before the first frame update
     void Start()
     {
-        KinectData kinectData = JsonUtility.FromJson<KinectData>(jsonFile.text);
+        KinectCalibrationData kinectCalibrationData = new KinectCalibrationData(xmlFile, jsonFile);
 
-        SetKinectPosition(kinectData);
-        SetKinectRotation(kinectData);
+        SetKinectPosition(kinectCalibrationData);
+        SetKinectRotation(kinectCalibrationData);
+
+        //TODO - change fieldOfView by calculating it 
+        //https://stackoverflow.com/questions/39992968/how-to-calculate-field-of-view-of-the-camera-from-camera-intrinsic-matrix
+        //kinect.GetComponent<Camera>().fieldOfView = 50;
     }
 
     // Update is called once per frame
@@ -50,28 +24,28 @@ public class TransformKinect : MonoBehaviour
     {
         
     }
-    
-    void SetKinectPosition(KinectData kinectData)
+
+    void SetKinectPosition(KinectCalibrationData kinectCalibrationData)
     {
         Vector3 kinectTranslation = new Vector3(
-            kinectData.pose.position.x * -1 * 10,
-            kinectData.pose.position.y * -1 * 10,
-            kinectData.pose.position.z * -1 * 10
+            kinectCalibrationData.pose.position.x * -1 * 10,
+            kinectCalibrationData.pose.position.y * -1 * 10,
+            kinectCalibrationData.pose.position.z * -1 * 10
         );
+
         kinect.transform.position = kinectTranslation;
     }
 
-    void SetKinectRotation(KinectData kinectData)
+    void SetKinectRotation(KinectCalibrationData kinectCalibrationData)
     {
         Quaternion kinectRotation = new Quaternion(
-            kinectData.pose.orientation.x,
-            kinectData.pose.orientation.y,
-            kinectData.pose.orientation.z,
-            kinectData.pose.orientation.w
+            kinectCalibrationData.pose.orientation.x,
+            kinectCalibrationData.pose.orientation.y,
+            kinectCalibrationData.pose.orientation.z,
+            kinectCalibrationData.pose.orientation.w
         );
 
-        Quaternion flipRotation = Quaternion.Euler(180f, 0f, 180f);
-
-        kinect.transform.rotation = kinectRotation * flipRotation;
+        Quaternion flipRotationByXZ = Quaternion.Euler(180f, 0f, 180f);
+        kinect.transform.rotation = kinectRotation * flipRotationByXZ;
     }
 }
