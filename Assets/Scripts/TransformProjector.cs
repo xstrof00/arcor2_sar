@@ -1,4 +1,5 @@
 using UnityEngine;
+using static System.Math;
 
 public class TransformProjector : MonoBehaviour
 {
@@ -13,7 +14,9 @@ public class TransformProjector : MonoBehaviour
         ProjectorCalibrationData projCalibrationData = new ProjectorCalibrationData(xmlFile);
 
         SetProjectorPosition(projCalibrationData);
-        SetProjectorRotation(projCalibrationData);   
+        SetProjectorRotation(projCalibrationData);
+        double projectorFovVertical = CalculateProjectorFovVertical(projCalibrationData);
+        projector.GetComponent<Camera>().fieldOfView = (float)projectorFovVertical;
 
         Screen.SetResolution(1920, 1080, true);
 
@@ -24,6 +27,26 @@ public class TransformProjector : MonoBehaviour
     void Update()
     {
 
+    }
+
+    double CalculateProjectorFovVertical(ProjectorCalibrationData projectorCalibrationData)
+    {
+        double[] projectorFov = new double[2];
+        float fy = projectorCalibrationData.intrinsics[5];
+        float resolutionHeight = projectorCalibrationData.height;
+
+        double projectorFovVertical = 2 * Atan(resolutionHeight / (2 * fy));
+
+        projectorFov[1] = projectorFovVertical;
+
+        double verticalFovInDegrees = ConvertRadiansToDegrees(projectorFovVertical);
+        return verticalFovInDegrees;
+    }
+
+    double ConvertRadiansToDegrees(double radians)
+    {
+        double degrees = (radians * 180 / PI);
+        return degrees;
     }
 
     void SetProjectorPosition(ProjectorCalibrationData projCalibrationData)

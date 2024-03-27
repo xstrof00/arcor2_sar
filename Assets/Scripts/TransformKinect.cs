@@ -17,7 +17,6 @@ public class TransformKinect : MonoBehaviour
         SetKinectRotation(kinectCalibrationData);
 
         double kinectFovVertical = CalculateKinectFovVertical(kinectCalibrationData);
-        Debug.Log(kinectFovVertical);
         kinect.GetComponent<Camera>().fieldOfView = (float)kinectFovVertical;
         
         
@@ -31,13 +30,10 @@ public class TransformKinect : MonoBehaviour
 
     double CalculateKinectFovVertical(KinectCalibrationData kinectCalibrationData)
     {
-        double[] kinectFov = new double[2];
         float fy = kinectCalibrationData.intrinsics[5];
         float resolutionHeight = kinectCalibrationData.resolution[0];
 
         double kinectFovVertical = 2 * Atan(resolutionHeight / (2 * fy));
-
-        kinectFov[1] = kinectFovVertical;
 
         double verticalFovInDegrees = ConvertRadiansToDegrees(kinectFovVertical);
         return verticalFovInDegrees;
