@@ -37,6 +37,7 @@ public class Position
 public class KinectCalibrationData
 {
     public Pose pose { get; private set; }
+    public float[] resolution {  get; private set; }
     public Matrix4x4 intrinsics { get; private set; }
     public float[] distortion { get; private set; }
 
@@ -45,6 +46,7 @@ public class KinectCalibrationData
         KinectData kinectData = JsonUtility.FromJson<KinectData>(jsonFile.text);
         XmlDocument xmlDoc = LoadXmlDoc(xmlFile);
 
+        resolution = ReadKinectResolution(xmlDoc);
         pose = kinectData.pose;
         intrinsics = ReadKinectIntrinsics(xmlDoc);
         distortion = ReadKinectDistortion(xmlDoc);
@@ -55,6 +57,18 @@ public class KinectCalibrationData
         XmlDocument xmlDoc = new XmlDocument();
         xmlDoc.LoadXml(xmlFile.text);
         return xmlDoc;
+    }
+
+    float[] ReadKinectResolution(XmlDocument xmlDoc)
+    {
+        float[] kinectResolution = new float[2];
+        XmlNode resolutionNode = xmlDoc.DocumentElement.SelectSingleNode("/opencv_storage/img_shape/data");
+        string[] parsedResolutionNode = GetStringFromXmlNode(resolutionNode);
+        for (int i = 0; i < 2; i++)
+        {
+            kinectResolution[i] = float.Parse(parsedResolutionNode[i], CultureInfo.InvariantCulture.NumberFormat);
+        }
+        return kinectResolution;
     }
 
     Matrix4x4 ReadKinectIntrinsics(XmlDocument xmlDoc)

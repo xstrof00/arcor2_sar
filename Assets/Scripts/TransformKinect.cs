@@ -1,4 +1,6 @@
+using System;
 using UnityEngine;
+using static System.Math;
 
 public class TransformKinect : MonoBehaviour
 {
@@ -14,15 +16,37 @@ public class TransformKinect : MonoBehaviour
         SetKinectPosition(kinectCalibrationData);
         SetKinectRotation(kinectCalibrationData);
 
-        //TODO - change fieldOfView by calculating it 
-        //https://stackoverflow.com/questions/39992968/how-to-calculate-field-of-view-of-the-camera-from-camera-intrinsic-matrix
-        //kinect.GetComponent<Camera>().fieldOfView = 50;
+        double kinectFovVertical = CalculateKinectFovVertical(kinectCalibrationData);
+        Debug.Log(kinectFovVertical);
+        kinect.GetComponent<Camera>().fieldOfView = (float)kinectFovVertical;
+        
+        
     }
 
     // Update is called once per frame
     void Update()
     {
         
+    }
+
+    double CalculateKinectFovVertical(KinectCalibrationData kinectCalibrationData)
+    {
+        double[] kinectFov = new double[2];
+        float fy = kinectCalibrationData.intrinsics[5];
+        float resolutionHeight = kinectCalibrationData.resolution[0];
+
+        double kinectFovVertical = 2 * Atan(resolutionHeight / (2 * fy));
+
+        kinectFov[1] = kinectFovVertical;
+
+        double verticalFovInDegrees = ConvertRadiansToDegrees(kinectFovVertical);
+        return verticalFovInDegrees;
+    }
+
+    double ConvertRadiansToDegrees(double radians)
+    {
+        double degrees = (radians * 180 / PI);
+        return degrees;
     }
 
     void SetKinectPosition(KinectCalibrationData kinectCalibrationData)

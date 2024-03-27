@@ -14,7 +14,7 @@ public class ProjectorCalibrationData
 
 	public ProjectorCalibrationData(TextAsset xmlFile)
     { 
-		XmlDocument xmlDoc = LoadXmlDoc(xmlFile);
+        XmlDocument xmlDoc = LoadXmlDoc(xmlFile);
 
         SetProjectorHeight();
         SetProjectorWidth();

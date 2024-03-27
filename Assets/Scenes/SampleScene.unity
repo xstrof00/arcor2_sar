@@ -664,8 +664,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   kinect: {fileID: 963194225}
-  jsonFile: {fileID: 4900000, guid: dbb2241c28917fa48aa44eaa5a475c29, type: 3}
   xmlFile: {fileID: 4900000, guid: 7acb2c439c541b546bafb6fcb32d5d4a, type: 3}
+  jsonFile: {fileID: 4900000, guid: dbb2241c28917fa48aa44eaa5a475c29, type: 3}
 --- !u!1 &1006867594
 GameObject:
   m_ObjectHideFlags: 0

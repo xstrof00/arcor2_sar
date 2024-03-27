@@ -26,13 +26,6 @@ public class TransformProjector : MonoBehaviour
 
     }
 
-    /*XmlDocument LoadXmlDoc()
-    {
-        XmlDocument doc = new XmlDocument();
-        doc.Load("../Calibration/calibration_result.xml");
-        return doc;
-    }*/
-
     void SetProjectorPosition(ProjectorCalibrationData projCalibrationData)
     { 
         projector.transform.position = projCalibrationData.position + kinect.transform.position;
