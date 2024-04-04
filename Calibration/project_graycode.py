@@ -78,7 +78,7 @@ displayWidth = 1920
 displaySurface = pygame.display.set_mode((displayWidth, displayHeight), pygame.FULLSCREEN, 0, display=1)
 
 i=0
-#startKinect()
+startKinect()
 for filename in sorted(os.listdir(inputFolder)):
     inputFilePath = os.path.join(inputFolder, filename)
     image = pygame.image.load(inputFilePath)
@@ -86,16 +86,16 @@ for filename in sorted(os.listdir(inputFolder)):
     imageSurface = pygame.transform.scale(imageSurface, displaySurface.get_size())
     displaySurface.blit(imageSurface, (0, 0))
     pygame.display.flip()
-    time.sleep(0.1)
+    time.sleep(0.5)
 
-    result = takePicture()
-    #kinectImage = Image.open(io.BytesIO(result.content))
-    #kinectImage = np.array(kinectImage)
-    #kinectImage = cv2.cvtColor(kinectImage, cv2.COLOR_RGB2BGR)
+    result = takePictureViaAPI()
+    kinectImage = Image.open(io.BytesIO(result.content))
+    kinectImage = np.array(kinectImage)
+    kinectImage = cv2.cvtColor(kinectImage, cv2.COLOR_RGB2BGR)
     formattedNum = '{:02d}'.format(i)
     outputFilePath = os.path.join(outputDirPath, f'graycode_{formattedNum}.jpg')
-    cv2.imwrite(outputFilePath, result)
+    cv2.imwrite(outputFilePath, kinectImage)
     i+=1  
-#stopKinect()     
+stopKinect()     
     
 pygame.quit()

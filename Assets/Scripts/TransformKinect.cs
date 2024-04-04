@@ -18,8 +18,6 @@ public class TransformKinect : MonoBehaviour
 
         double kinectFovVertical = CalculateKinectFovVertical(kinectCalibrationData);
         kinect.GetComponent<Camera>().fieldOfView = (float)kinectFovVertical;
-        
-        
     }
 
     // Update is called once per frame

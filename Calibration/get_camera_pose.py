@@ -13,7 +13,7 @@ class CamParameters():
     fy: float = 0.0
     distortionCoeffs: list = [0.0, 0.0, 0.0, 0.0, 0.0]
 
-'''
+
 class Position():
     x: float = 0.0
     y: float = 0.0
@@ -25,6 +25,7 @@ class Orientation():
     y: float = 0.0
     z: float = 0.0
     
+'''
 kinectPosition = Position()
 kinectOrientation = Orientation()
 
