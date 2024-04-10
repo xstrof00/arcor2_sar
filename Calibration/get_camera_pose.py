@@ -25,7 +25,7 @@ class Orientation():
     y: float = 0.0
     z: float = 0.0
     
-'''
+
 kinectPosition = Position()
 kinectOrientation = Orientation()
 
@@ -41,35 +41,38 @@ kinectPose = {
         'z': kinectOrientation.z,
         'w': kinectOrientation.w
     }
-} '''   
+}
 
-#Using API to take picture via Kinect and get its pose
+def fullStart():
+    kinectStartUrl = "http://192.168.104.100:5017/state/full-start"
+    kinectStartResponse = requests.put(kinectStartUrl, json=kinectPose)
+    print("Starting kinect:", kinectStartResponse.status_code)
 
-'''kinectStartUrl = "http://192.168.104.100:5017/state/full-start"
-kinectStartResponse = requests.put(kinectStartUrl, json=kinectPose)
-print("Starting kinect:", kinectStartResponse.status_code)
+def getState():
+    kinectGetStateUrl = "http://192.168.104.100:5017/state/started"
+    kinectGetStateResponse = requests.get(kinectGetStateUrl)
+    print("Is kinect started?:", kinectGetStateResponse.text)
 
-kinectGetStateUrl = "http://192.168.104.100:5017/state/started"
-kinectGetStateResponse = requests.get(kinectGetStateUrl)
-print("Is kinect started?:", kinectGetStateResponse.text)
+def getColorImage():
+    colorImageUrl = "http://192.168.104.100:5017/color/image"
+    colorImageResponse = requests.get(colorImageUrl)
+    print("Taking color image:", colorImageResponse.status_code)
+    return colorImageResponse
 
-colorImageUrl = "http://192.168.104.100:5017/color/image"
-colorImageResponse = requests.get(colorImageUrl)
-print("Taking color image:", colorImageResponse.status_code)
+def stopKinect():
+    kinectStopUrl = "http://192.168.104.100:5017/state/stop"
+    kinectStartResponse = requests.put(kinectStopUrl)
+    print("Stopping kinect:", kinectStartResponse.status_code)
 
-kinectStopUrl = "http://192.168.104.100:5017/state/stop"
-kinectStartResponse = requests.put(kinectStopUrl)
-print("Stopping kinect:", kinectStartResponse.status_code)
+def saveCalibrationImage(colorImageResponse):
+    kinectImage = Image.open(io.BytesIO(colorImageResponse.content))
+    kinectImage.save('get_camera_pose_photo.png', format='PNG')
 
-#with open('kinect_image.bin', 'wb') as file:
-#    file.write(colorImageResponse.content)
-
-kinectImage = Image.open(io.BytesIO(colorImageResponse.content))
-kinectImage.save('kinect_image2.png', format='PNG')
-
-kinectCalibrateUrl = "http://192.168.104.100:5014/calibrate/camera"
-kinectCalibrateResponse = requests.put(kinectCalibrateUrl, files={'image': colorImageResponse.content}, params=cameraParameters)
-print("Calibrating kinect:", kinectCalibrateResponse.text)'''
+def calibrateKinect(colorImageResponse, jsonCamParameters):
+    kinectCalibrateUrl = "http://192.168.104.100:5014/calibrate/camera"
+    kinectCalibrateResponse = requests.put(kinectCalibrateUrl, files={'image': colorImageResponse.content}, params=jsonCamParameters)
+    print("Calibrating kinect:", kinectCalibrateResponse.text)
+    return kinectCalibrateResponse
 
 #Conneting to ARServer via ssh and taking a picture with kinect directly, gettting its pose with calibration API
 
@@ -84,7 +87,7 @@ def takePicture():
     ret, frame = cap.read()
 
     cap.release()
-    photo_filename='get_camera_pose_photo.jpg'
+    photo_filename='get_camera_pose_photo.png'
 
     if ret:
         cv2.imwrite(photo_filename, frame)
@@ -129,17 +132,25 @@ if __name__ == "__main__":
     camParameters.distortionCoeffs = camDistCoefficients
 
     jsonCamParameters = camParameters.__dict__
-
+    
     kinectPicture = takePicture()
     kinectPictureImage = Image.fromarray(kinectPicture)
     kinectPictureBytes = io.BytesIO()
-    kinectPictureImage.save(kinectPictureBytes, format='JPEG')
+    kinectPictureImage.save(kinectPictureBytes, format='PNG')
     binaryPicture = kinectPictureBytes.getvalue()
 
     kinectCalibrateUrl = "http://192.168.104.100:5014/calibrate/camera"
     kinectCalibrateResponse = requests.put(kinectCalibrateUrl, files={'image': binaryPicture}, params=jsonCamParameters)
     print("Calibrating kinect:", kinectCalibrateResponse.text)
+    '''
+    fullStart()
+    getState()
+    colorImageResponse = getColorImage()
+    stopKinect()
+    saveCalibrationImage(colorImageResponse)
+    kinectCalibrateResponse = calibrateKinect(colorImageResponse, jsonCamParameters)
+    '''
 
-    kinectCalibrationFile = "kinectCalibrationData.json "
+    kinectCalibrationFile = "kinectCalibrationData.json"
     with open(kinectCalibrationFile, 'w') as file:
         file.write(kinectCalibrateResponse.text)
