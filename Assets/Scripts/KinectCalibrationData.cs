@@ -13,12 +13,12 @@ public class KinectData
 [System.Serializable]
 public class Pose
 {
-    public Orientation orientation;
-    public Position position;
+    public KinectOrientation orientation;
+    public KinectPosition position;
 }
 
 [System.Serializable]
-public class Orientation
+public class KinectOrientation
 {
     public float w;
     public float x;
@@ -27,7 +27,7 @@ public class Orientation
 }
 
 [System.Serializable]
-public class Position
+public class KinectPosition
 {
     public float x;
     public float y;
