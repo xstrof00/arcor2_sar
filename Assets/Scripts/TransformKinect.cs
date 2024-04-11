@@ -3,7 +3,7 @@ using System;
 using UnityEngine;
 using static System.Math;
 
-public class TransformKinect : MonoBehaviour
+public class TransformKinect : Singleton<TransformKinect>
 {
     public GameObject kinect;
     public TextAsset xmlFile;

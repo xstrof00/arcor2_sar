@@ -124,7 +124,6 @@ namespace Base {
         /// </summary>
         private string serverDomain;
 
-
         /// <summary>
         /// Callbeck when connection to the server is closed
         /// </summary>
@@ -286,8 +285,10 @@ namespace Base {
 
             if (dispatch?.response == null && dispatch?.request == null && dispatch?.@event == null)
                 return;
-            if (dispatch?.@event == null || (dispatch?.@event != "RobotEef" && dispatch?.@event != "RobotJoints"))
+            if (dispatch?.@event == null || (dispatch?.@event != "RobotEef" && dispatch?.@event != "RobotJoints")) {
                 Debug.Log("Recieved new data: " + data);
+                Debug.Log("Response print:" + dispatch.@event);
+            }
             if (dispatch.response != null) {
 
                 if (responses.ContainsKey(dispatch.id)) {
