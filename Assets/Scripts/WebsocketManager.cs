@@ -269,6 +269,7 @@ namespace Base {
             }
         }
 
+        //TODO - delete
         private void ShowStateInfoOnScreen(string @event)
         {
             GameObject stateInfo = GameObject.FindGameObjectWithTag("StateInfoPrefab");
@@ -322,7 +323,7 @@ namespace Base {
 
                 if (dispatch.@event != null)
                 {
-                    ShowStateInfoOnScreen(dispatch.@event);
+                    //ShowStateInfoOnScreen(dispatch.@event);
                 }
             }
             if (dispatch.response != null) {
@@ -583,6 +584,17 @@ namespace Base {
         private void HandleShowMainScreen(string data) {
             IO.Swagger.Model.ShowMainScreen showMainScreenEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.ShowMainScreen>(data);
             OnShowMainScreen?.Invoke(this, new ShowMainScreenEventArgs(showMainScreenEvent.Data));
+
+            GameObject stateInfo = GameObject.FindGameObjectWithTag("StateInfoPrefab");
+            if (stateInfo == null)
+            {
+                stateInfo = Instantiate(Resources.Load("StateInfoText") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
+            }
+            TMP_Text stateInfoText = stateInfo.GetComponent<TMP_Text>();
+
+            stateInfoText.text = "Main screen";
+            stateInfoText.color = new Color32(255, 255, 255, 255);
+            stateInfo.GetComponent<TMP_Text>().ForceMeshUpdate();
         }
 
         private void HandleRobotMoveToActionPointOrientation(string data) {
@@ -964,6 +976,17 @@ namespace Base {
         private async void HandleOpenProject(string data) {
             IO.Swagger.Model.OpenProject openProjectEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.OpenProject>(data);
             //GameManager.Instance.ProjectOpened(openProjectEvent.Data.Scene, openProjectEvent.Data.Project);
+
+            GameObject stateInfo = GameObject.FindGameObjectWithTag("StateInfoPrefab");
+            if (stateInfo == null)
+            {
+                stateInfo = Instantiate(Resources.Load("StateInfoText") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
+            }
+            TMP_Text stateInfoText = stateInfo.GetComponent<TMP_Text>();
+
+            stateInfoText.text = "Editing project";
+            stateInfoText.color = new Color32(0, 255, 255, 255);
+            stateInfo.GetComponent<TMP_Text>().ForceMeshUpdate();
         }
 
         /// <summary>
@@ -974,6 +997,17 @@ namespace Base {
         private async Task HandleOpenScene(string data) {
             IO.Swagger.Model.OpenScene openSceneEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.OpenScene>(data);
             //await GameManager.Instance.SceneOpened(openSceneEvent.Data.Scene);
+
+            GameObject stateInfo = GameObject.FindGameObjectWithTag("StateInfoPrefab");
+            if (stateInfo == null)
+            {
+                stateInfo = Instantiate(Resources.Load("StateInfoText") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
+            }
+            TMP_Text stateInfoText = stateInfo.GetComponent<TMP_Text>();
+
+            stateInfoText.text = "Editing scene";
+            stateInfoText.color = new Color32(0, 255, 0, 255);
+            stateInfo.GetComponent<TMP_Text>().ForceMeshUpdate();
         }
 
         /// <summary>
