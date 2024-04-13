@@ -3,7 +3,11 @@ guid: 52325b97fda78c648914fef516194867
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - kinect: {instanceID: 0}
+  - xmlFile: {instanceID: 0}
+  - jsonFile: {instanceID: 0}
+  - stateInfoPrefab: {fileID: 8928474576473412769, guid: c8fface1833a9634faa6981ab5206984, type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

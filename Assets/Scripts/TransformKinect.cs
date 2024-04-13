@@ -1,5 +1,6 @@
 using Base;
 using System;
+using TMPro;
 using UnityEngine;
 using static System.Math;
 
@@ -26,7 +27,7 @@ public class TransformKinect : Singleton<TransformKinect>
     // Update is called once per frame
     void Update()
     {
-        
+       
     }
 
     double CalculateKinectFovVertical(KinectCalibrationData kinectCalibrationData)

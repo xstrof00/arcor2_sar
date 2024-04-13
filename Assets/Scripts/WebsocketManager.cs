@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using NativeWebSocket;
 using IO.Swagger.Model;
 using UnityEngine.Events;
+using TMPro;
 
 
 namespace Base {
@@ -268,6 +269,36 @@ namespace Base {
             }
         }
 
+        private void ShowStateInfoOnScreen(string @event)
+        {
+            GameObject stateInfo = GameObject.FindGameObjectWithTag("StateInfoPrefab");
+            if (stateInfo == null)
+            {
+                stateInfo = Instantiate(Resources.Load("StateInfoText") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
+            }
+            TMP_Text stateInfoText = stateInfo.GetComponent<TMP_Text>();
+            switch (@event)
+            {
+                case "ShowMainScreen":
+                    stateInfoText.text = "Main screen";
+                    stateInfoText.color = new Color32(255, 255, 255, 255);
+                    stateInfo.GetComponent<TMP_Text>().ForceMeshUpdate();
+                    break;
+                case "OpenScene":
+                    stateInfoText.text = "Editing scene";
+                    stateInfoText.color = new Color32(0, 255, 0, 255);
+                    stateInfo.GetComponent<TMP_Text>().ForceMeshUpdate();
+                    break;
+                case "OpenProject":
+                    stateInfoText.text = "Editing project";
+                    stateInfoText.color = new Color32(0, 255, 255, 255);
+                    stateInfo.GetComponent<TMP_Text>().ForceMeshUpdate();
+                    break;
+                default:
+                    break;
+            }
+        }
+
         /// <summary>
         /// Method for parsing recieved message and invoke proper callback
         /// </summary>
@@ -288,6 +319,11 @@ namespace Base {
             if (dispatch?.@event == null || (dispatch?.@event != "RobotEef" && dispatch?.@event != "RobotJoints")) {
                 Debug.Log("Recieved new data: " + data);
                 Debug.Log("Response print:" + dispatch.@event);
+
+                if (dispatch.@event != null)
+                {
+                    ShowStateInfoOnScreen(dispatch.@event);
+                }
             }
             if (dispatch.response != null) {
 
