@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Canvas
   - StateInfoPrefab
+  - ObjectPrefab
   layers:
   - Default
   - TransparentFX

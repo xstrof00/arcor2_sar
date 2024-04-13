@@ -269,37 +269,6 @@ namespace Base {
             }
         }
 
-        //TODO - delete
-        private void ShowStateInfoOnScreen(string @event)
-        {
-            GameObject stateInfo = GameObject.FindGameObjectWithTag("StateInfoPrefab");
-            if (stateInfo == null)
-            {
-                stateInfo = Instantiate(Resources.Load("StateInfoText") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
-            }
-            TMP_Text stateInfoText = stateInfo.GetComponent<TMP_Text>();
-            switch (@event)
-            {
-                case "ShowMainScreen":
-                    stateInfoText.text = "Main screen";
-                    stateInfoText.color = new Color32(255, 255, 255, 255);
-                    stateInfo.GetComponent<TMP_Text>().ForceMeshUpdate();
-                    break;
-                case "OpenScene":
-                    stateInfoText.text = "Editing scene";
-                    stateInfoText.color = new Color32(0, 255, 0, 255);
-                    stateInfo.GetComponent<TMP_Text>().ForceMeshUpdate();
-                    break;
-                case "OpenProject":
-                    stateInfoText.text = "Editing project";
-                    stateInfoText.color = new Color32(0, 255, 255, 255);
-                    stateInfo.GetComponent<TMP_Text>().ForceMeshUpdate();
-                    break;
-                default:
-                    break;
-            }
-        }
-
         /// <summary>
         /// Method for parsing recieved message and invoke proper callback
         /// </summary>
@@ -320,11 +289,6 @@ namespace Base {
             if (dispatch?.@event == null || (dispatch?.@event != "RobotEef" && dispatch?.@event != "RobotJoints")) {
                 Debug.Log("Recieved new data: " + data);
                 Debug.Log("Response print:" + dispatch.@event);
-
-                if (dispatch.@event != null)
-                {
-                    //ShowStateInfoOnScreen(dispatch.@event);
-                }
             }
             if (dispatch.response != null) {
 
@@ -585,10 +549,11 @@ namespace Base {
             IO.Swagger.Model.ShowMainScreen showMainScreenEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.ShowMainScreen>(data);
             OnShowMainScreen?.Invoke(this, new ShowMainScreenEventArgs(showMainScreenEvent.Data));
 
-            GameObject stateInfo = GameObject.FindGameObjectWithTag("StateInfoPrefab");
+            GameObject stateInfo = GameObject.Find("StateInfoText");
             if (stateInfo == null)
             {
                 stateInfo = Instantiate(Resources.Load("StateInfoText") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
+                stateInfo.name = "StateInfoText";
             }
             TMP_Text stateInfoText = stateInfo.GetComponent<TMP_Text>();
 
@@ -977,16 +942,24 @@ namespace Base {
             IO.Swagger.Model.OpenProject openProjectEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.OpenProject>(data);
             //GameManager.Instance.ProjectOpened(openProjectEvent.Data.Scene, openProjectEvent.Data.Project);
 
-            GameObject stateInfo = GameObject.FindGameObjectWithTag("StateInfoPrefab");
+            GameObject stateInfo = GameObject.Find("StateInfoText");
             if (stateInfo == null)
             {
                 stateInfo = Instantiate(Resources.Load("StateInfoText") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
+                stateInfo.name = "StateInfoText";
             }
             TMP_Text stateInfoText = stateInfo.GetComponent<TMP_Text>();
 
             stateInfoText.text = "Editing project";
-            stateInfoText.color = new Color32(0, 255, 255, 255);
+            stateInfoText.color = new Color32(0, 150, 255, 255);
             stateInfo.GetComponent<TMP_Text>().ForceMeshUpdate();
+
+            foreach (var ap in openProjectEvent.Data.Project.ActionPoints)
+            {
+                Instantiate(Resources.Load("ActionPointPrefab") as GameObject, 
+                    new Vector3(-1 * 10 * (float)ap.Position.X, -1 * 10 * (float)ap.Position.Y, 0.0f), 
+                    Quaternion.identity, GameObject.FindGameObjectWithTag("Canvas").transform);
+            }
         }
 
         /// <summary>
@@ -998,10 +971,11 @@ namespace Base {
             IO.Swagger.Model.OpenScene openSceneEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.OpenScene>(data);
             //await GameManager.Instance.SceneOpened(openSceneEvent.Data.Scene);
 
-            GameObject stateInfo = GameObject.FindGameObjectWithTag("StateInfoPrefab");
+            GameObject stateInfo = GameObject.Find("StateInfoText");
             if (stateInfo == null)
             {
                 stateInfo = Instantiate(Resources.Load("StateInfoText") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
+                stateInfo.name = "StateInfoText";
             }
             TMP_Text stateInfoText = stateInfo.GetComponent<TMP_Text>();
 
@@ -1016,6 +990,11 @@ namespace Base {
         /// <param name="data">Message from server</param>
         private void HandleCloseProject(string data) {
             //GameManager.Instance.ProjectClosed();
+            GameObject[] gameObjects = GameObject.FindGameObjectsWithTag("ObjectPrefab");
+            foreach (var gameObject in gameObjects)
+            {
+                Destroy(gameObject.gameObject);
+            }
         }
 
         /// <summary>
@@ -1024,6 +1003,11 @@ namespace Base {
         /// <param name="data">Message from server</param>
         private void HandleCloseScene(string data) {
             //GameManager.Instance.SceneClosed();
+            GameObject[] gameObjects = GameObject.FindGameObjectsWithTag("ObjectPrefab");
+            foreach (var gameObject in gameObjects)
+            {
+                Destroy(gameObject.gameObject);
+            }
         }
 
         /// <summary>
