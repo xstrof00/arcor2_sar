@@ -15,8 +15,9 @@ public class GameManager : Singleton<GameManager>
     // Start is called before the first frame update
     void Start()
     {
-        WebsocketManager.Instance.OnActionPointAdded += APAdd;
-        WebsocketManager.Instance.OnActionPointBaseUpdated += APChangeUpdateBase;
+        WebsocketManager.Instance.OnActionPointAdded += ApAdd;
+        WebsocketManager.Instance.OnActionPointBaseUpdated += ApChangeUpdateBase;
+        WebsocketManager.Instance.OnActionPointRemoved += ApRemove;
     }
 
     // Update is called once per frame
@@ -41,10 +42,10 @@ public class GameManager : Singleton<GameManager>
 
         foreach (var ap in project.ActionPoints)
         {
-            ActionPoint newAP = ap;
+            ActionPoint newAp = ap;
 
-            actionPoints.Add(newAP);
-            AddActionPointToScene(newAP);
+            actionPoints.Add(newAp);
+            AddActionPointToScene(newAp);
         }
     }
 
@@ -95,19 +96,25 @@ public class GameManager : Singleton<GameManager>
         DestroyObjectPrefabs();
     }
 
-    private void APAdd(object sender, ProjectActionPointEventArgs args)
+    private void ApAdd(object sender, ProjectActionPointEventArgs args)
     {
-        ActionPoint newAP = args.ActionPoint;
-
-        actionPoints.Add(newAP);
-        AddActionPointToScene(newAP);
+        ActionPoint newAp = args.ActionPoint;
+        actionPoints.Add(newAp);
+        AddActionPointToScene(newAp);
     }
 
-    private void APChangeUpdateBase(object sender, BareActionPointEventArgs args)
+    private void ApChangeUpdateBase(object sender, BareActionPointEventArgs args)
     {
-        ActionPoint updatedAP = actionPoints.Find(x => x.Id == args.ActionPoint.Id);
-        updatedAP.Position = args.ActionPoint.Position;
+        ActionPoint updatedAp = actionPoints.Find(x => x.Id == args.ActionPoint.Id);
+        updatedAp.Position = args.ActionPoint.Position;
         UpdateActionPointPoistionInScene(args.ActionPoint.Id);
+    }
+
+    private void ApRemove(object sender, StringEventArgs args)
+    {
+        ActionPoint removedAp = actionPoints.Find(x => x.Id == args.Data);
+        actionPoints.Remove(removedAp);
+        DestroyActionPointInScene(args.Data);
     }
 
     private void AddActionPointToScene(ActionPoint ap)
@@ -121,7 +128,6 @@ public class GameManager : Singleton<GameManager>
     private void UpdateActionPointPoistionInScene(string id)
     {
         ActionPoint actionPoint = actionPoints.Find(x => x.Id == id);
-
         GameObject apInScene = GameObject.Find(id);
         apInScene.transform.position = AREditorToSARPosition(actionPoint.Position);
     }
@@ -133,9 +139,10 @@ public class GameManager : Singleton<GameManager>
         return position;
     }
 
-    private void DestroyAllActionPoints()
+    private void DestroyActionPointInScene(string id)
     {
-        actionPoints.Clear();
+        GameObject removedAp = GameObject.Find(id);
+        Destroy(removedAp);
     }
 
     private void DestroyObjectPrefabs()
