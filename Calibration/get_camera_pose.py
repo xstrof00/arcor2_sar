@@ -133,23 +133,26 @@ if __name__ == "__main__":
 
     jsonCamParameters = camParameters.__dict__
     
+    '''
     kinectPicture = takePicture()
     kinectPictureImage = Image.fromarray(kinectPicture)
     kinectPictureBytes = io.BytesIO()
     kinectPictureImage.save(kinectPictureBytes, format='PNG')
     binaryPicture = kinectPictureBytes.getvalue()
+    
 
     kinectCalibrateUrl = "http://192.168.104.100:5014/calibrate/camera"
     kinectCalibrateResponse = requests.put(kinectCalibrateUrl, files={'image': binaryPicture}, params=jsonCamParameters)
     print("Calibrating kinect:", kinectCalibrateResponse.text)
     '''
+    
     fullStart()
     getState()
     colorImageResponse = getColorImage()
     stopKinect()
     saveCalibrationImage(colorImageResponse)
     kinectCalibrateResponse = calibrateKinect(colorImageResponse, jsonCamParameters)
-    '''
+    
 
     kinectCalibrationFile = "kinectCalibrationData.json"
     with open(kinectCalibrationFile, 'w') as file:

@@ -21,7 +21,7 @@ public class TransformKinect : Singleton<TransformKinect>
         double kinectFovVertical = CalculateKinectFovVertical(kinectCalibrationData);
         kinect.GetComponent<Camera>().fieldOfView = (float)kinectFovVertical;
 
-        TestConnectToServer();
+        GameManager.Instance.ConnectToServer();
     }
 
     // Update is called once per frame
@@ -69,19 +69,5 @@ public class TransformKinect : Singleton<TransformKinect>
 
         Quaternion flipRotationByXZ = Quaternion.Euler(180f, 0f, 180f);
         kinect.transform.rotation = kinectRotation * flipRotationByXZ;
-    }
-
-    async void TestConnectToServer()
-    {
-        WebsocketManager.Instance.ConnectToServer("192.168.104.100", 6789);
-        IO.Swagger.Model.SystemInfoResponseData systemInfo;
-        try
-        {
-            systemInfo = await WebsocketManager.Instance.GetSystemInfo();
-        }
-        catch(RequestFailedException ex)
-        {
-            Debug.Log(ex.Message);
-        }
     }
 }

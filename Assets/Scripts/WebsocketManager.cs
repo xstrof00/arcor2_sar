@@ -548,18 +548,7 @@ namespace Base {
         private void HandleShowMainScreen(string data) {
             IO.Swagger.Model.ShowMainScreen showMainScreenEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.ShowMainScreen>(data);
             OnShowMainScreen?.Invoke(this, new ShowMainScreenEventArgs(showMainScreenEvent.Data));
-
-            GameObject stateInfo = GameObject.Find("StateInfoText");
-            if (stateInfo == null)
-            {
-                stateInfo = Instantiate(Resources.Load("StateInfoText") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
-                stateInfo.name = "StateInfoText";
-            }
-            TMP_Text stateInfoText = stateInfo.GetComponent<TMP_Text>();
-
-            stateInfoText.text = "Main screen";
-            stateInfoText.color = new Color32(255, 255, 255, 255);
-            stateInfo.GetComponent<TMP_Text>().ForceMeshUpdate();
+            GameManager.Instance.ShowMainScreen();
         }
 
         private void HandleRobotMoveToActionPointOrientation(string data) {
@@ -940,26 +929,7 @@ namespace Base {
         /// <param name="data">Message from server</param>
         private async void HandleOpenProject(string data) {
             IO.Swagger.Model.OpenProject openProjectEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.OpenProject>(data);
-            //GameManager.Instance.ProjectOpened(openProjectEvent.Data.Scene, openProjectEvent.Data.Project);
-
-            GameObject stateInfo = GameObject.Find("StateInfoText");
-            if (stateInfo == null)
-            {
-                stateInfo = Instantiate(Resources.Load("StateInfoText") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
-                stateInfo.name = "StateInfoText";
-            }
-            TMP_Text stateInfoText = stateInfo.GetComponent<TMP_Text>();
-
-            stateInfoText.text = "Editing project";
-            stateInfoText.color = new Color32(0, 150, 255, 255);
-            stateInfo.GetComponent<TMP_Text>().ForceMeshUpdate();
-
-            foreach (var ap in openProjectEvent.Data.Project.ActionPoints)
-            {
-                Instantiate(Resources.Load("ActionPointPrefab") as GameObject, 
-                    new Vector3(-1 * 10 * (float)ap.Position.X, -1 * 10 * (float)ap.Position.Y, 0.0f), 
-                    Quaternion.identity, GameObject.FindGameObjectWithTag("Canvas").transform);
-            }
+            GameManager.Instance.OpenProject(openProjectEvent.Data.Scene, openProjectEvent.Data.Project);
         }
 
         /// <summary>
@@ -969,19 +939,7 @@ namespace Base {
         /// <returns></returns>
         private async Task HandleOpenScene(string data) {
             IO.Swagger.Model.OpenScene openSceneEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.OpenScene>(data);
-            //await GameManager.Instance.SceneOpened(openSceneEvent.Data.Scene);
-
-            GameObject stateInfo = GameObject.Find("StateInfoText");
-            if (stateInfo == null)
-            {
-                stateInfo = Instantiate(Resources.Load("StateInfoText") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
-                stateInfo.name = "StateInfoText";
-            }
-            TMP_Text stateInfoText = stateInfo.GetComponent<TMP_Text>();
-
-            stateInfoText.text = "Editing scene";
-            stateInfoText.color = new Color32(0, 255, 0, 255);
-            stateInfo.GetComponent<TMP_Text>().ForceMeshUpdate();
+            GameManager.Instance.OpenScene(openSceneEvent.Data.Scene);
         }
 
         /// <summary>
@@ -989,12 +947,7 @@ namespace Base {
         /// </summary>
         /// <param name="data">Message from server</param>
         private void HandleCloseProject(string data) {
-            //GameManager.Instance.ProjectClosed();
-            GameObject[] gameObjects = GameObject.FindGameObjectsWithTag("ObjectPrefab");
-            foreach (var gameObject in gameObjects)
-            {
-                Destroy(gameObject.gameObject);
-            }
+            GameManager.Instance.CloseProject();
         }
 
         /// <summary>
@@ -1002,12 +955,7 @@ namespace Base {
         /// </summary>
         /// <param name="data">Message from server</param>
         private void HandleCloseScene(string data) {
-            //GameManager.Instance.SceneClosed();
-            GameObject[] gameObjects = GameObject.FindGameObjectsWithTag("ObjectPrefab");
-            foreach (var gameObject in gameObjects)
-            {
-                Destroy(gameObject.gameObject);
-            }
+            GameManager.Instance.CloseScene();
         }
 
         /// <summary>

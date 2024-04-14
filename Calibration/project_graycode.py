@@ -45,7 +45,7 @@ def takePicture():
     else:
         print("Error occured while taking the picture.")
 
-'''
+
 def takePictureViaAPI():
     colorImageUrl = "http://192.168.104.100:5017/color/image"
     colorImageResponse = requests.get(colorImageUrl)
@@ -61,7 +61,7 @@ def stopKinect():
     kinectStartResponse = requests.put(kinectStopUrl)
     print("Stopping kinect:", kinectStartResponse.status_code)
 
-'''
+
 inputFolder = "graycode_pattern"
 
 pygame.init()
@@ -80,7 +80,7 @@ displayWidth = 1920
 displaySurface = pygame.display.set_mode((displayWidth, displayHeight), pygame.FULLSCREEN, 0, display=1)
 
 i=0
-#startKinect()
+startKinect()
 for filename in sorted(os.listdir(inputFolder)):
     inputFilePath = os.path.join(inputFolder, filename)
     image = pygame.image.load(inputFilePath)
@@ -90,16 +90,16 @@ for filename in sorted(os.listdir(inputFolder)):
     pygame.display.flip()
     time.sleep(0.2)
 
-    result = takePicture()
-    '''
+    result = takePictureViaAPI()
+    
     kinectImage = Image.open(io.BytesIO(result.content))
-    kinectImage = np.array(result)
+    kinectImage = np.array(kinectImage)
     kinectImage = cv2.cvtColor(kinectImage, cv2.COLOR_RGB2BGR)
-    '''
+    
     formattedNum = '{:02d}'.format(i)
-    outputFilePath = os.path.join(outputDirPath, f'graycode_{formattedNum}.jpg')
-    cv2.imwrite(outputFilePath, result)
+    outputFilePath = os.path.join(outputDirPath, f'graycode_{formattedNum}.png')
+    cv2.imwrite(outputFilePath, kinectImage)
     i+=1  
-#stopKinect()     
+stopKinect()     
     
 pygame.quit()
