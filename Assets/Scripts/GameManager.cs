@@ -9,8 +9,17 @@ using UnityEngine;
 
 public class GameManager : Singleton<GameManager>
 {
-
     private List<ActionPoint> actionPoints = new List<ActionPoint>();
+
+    private enum ScreenStateEnum
+    {
+        MainScreen,
+        EditingScene,
+        EditingProject,
+        RunningPackage,
+        PausingPackage,
+        PausedPackage
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -33,12 +42,12 @@ public class GameManager : Singleton<GameManager>
 
     public void ShowMainScreen()
     {
-        PrintStateInfoText("main screen");
+        PrintStateInfoText(ScreenStateEnum.MainScreen);
     }
 
     public void OpenProject(Scene scene, Project project)
     {
-        PrintStateInfoText("project");
+        PrintStateInfoText(ScreenStateEnum.EditingProject);
 
         foreach (var ap in project.ActionPoints)
         {
@@ -51,10 +60,28 @@ public class GameManager : Singleton<GameManager>
 
     public void OpenScene(Scene scene)
     {
-        PrintStateInfoText("scene");
+        PrintStateInfoText(ScreenStateEnum.EditingScene);
     }
 
-    private void PrintStateInfoText(string state)
+    public void PackageStateUpdated(PackageStateData packageStateData)
+    {
+        switch(packageStateData.State)
+        {
+            case PackageStateData.StateEnum.Running:
+                PrintStateInfoText(ScreenStateEnum.RunningPackage);
+                break;
+
+            case PackageStateData.StateEnum.Pausing:
+                PrintStateInfoText(ScreenStateEnum.PausingPackage);
+                break;
+
+            case PackageStateData.StateEnum.Paused:
+                PrintStateInfoText(ScreenStateEnum.PausedPackage);
+                break;
+        }
+    }
+
+    private void PrintStateInfoText(ScreenStateEnum state)
     {
         GameObject stateInfo = GameObject.Find("StateInfoText");
         if (stateInfo == null)
@@ -66,21 +93,39 @@ public class GameManager : Singleton<GameManager>
 
         switch (state)
         {
-            case "main screen":
+            case ScreenStateEnum.MainScreen:
                 stateInfoText.text = "Main screen";
                 stateInfoText.color = new Color32(255, 255, 255, 255);
                 stateInfo.GetComponent<TMP_Text>().ForceMeshUpdate();
                 break;
 
-            case "scene":
+            case ScreenStateEnum.EditingScene:
                 stateInfoText.text = "Editing scene";
+                stateInfoText.color = new Color32(0, 150, 255, 255);
+                stateInfo.GetComponent<TMP_Text>().ForceMeshUpdate();
+                break;
+
+            case ScreenStateEnum.EditingProject:
+                stateInfoText.text = "Editing project";
+                stateInfoText.color = new Color32(255, 0, 255, 255);
+                stateInfo.GetComponent<TMP_Text>().ForceMeshUpdate();
+                break;
+
+            case ScreenStateEnum.RunningPackage:
+                stateInfoText.text = "Running";
                 stateInfoText.color = new Color32(0, 255, 0, 255);
                 stateInfo.GetComponent<TMP_Text>().ForceMeshUpdate();
                 break;
 
-            case "project":
-                stateInfoText.text = "Editing project";
-                stateInfoText.color = new Color32(0, 150, 255, 255);
+            case ScreenStateEnum.PausingPackage:
+                stateInfoText.text = "Pausing";
+                stateInfoText.color = new Color32(255, 0, 100, 255);
+                stateInfo.GetComponent<TMP_Text>().ForceMeshUpdate();
+                break;
+
+            case ScreenStateEnum.PausedPackage:
+                stateInfoText.text = "Paused";
+                stateInfoText.color = new Color32(255, 0, 0, 255);
                 stateInfo.GetComponent<TMP_Text>().ForceMeshUpdate();
                 break;
         }

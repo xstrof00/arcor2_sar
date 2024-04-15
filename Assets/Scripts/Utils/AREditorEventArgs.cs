@@ -124,7 +124,7 @@ namespace Base {
             Action = action;
         }
     }*/
-
+    
     public class BareActionPointEventArgs : EventArgs {
         
         public IO.Swagger.Model.BareActionPoint ActionPoint {

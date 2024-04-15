@@ -687,7 +687,7 @@ namespace Base {
         /// <param name="obj"></param>
         private void HandlePackageState(string obj) {
             IO.Swagger.Model.PackageState projectState = JsonConvert.DeserializeObject<IO.Swagger.Model.PackageState>(obj);
-            //GameManager.Instance.PackageStateUpdated(projectState.Data);
+            GameManager.Instance.PackageStateUpdated(projectState.Data);
         }
 
         /// <summary>
