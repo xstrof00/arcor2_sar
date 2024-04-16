@@ -65,15 +65,13 @@ public class TransformProjector : MonoBehaviour
 
         Quaternion projectorRotation = Quaternion.LookRotation(forward, up);
 
-        Quaternion flipRotation = Quaternion.Euler(180f, 0f, 180f);
-
-        Quaternion inverseKinectRotation = Quaternion.Inverse(kinect.transform.rotation);
-        Quaternion inverseProjectorRotation = Quaternion.Inverse(projectorRotation);
         projector.transform.rotation = projectorRotation * kinect.transform.rotation;
     }
 
     void SetPerspectiveMatrix(ProjectorCalibrationData projCalibrationData, Camera cam)
     {
+        //Following code in this function was adapted from: https://kamino.hatenablog.com/entry/unity-import-opencv-camera-params
+
         Matrix4x4 PerspectiveMatrix()
         {
             var m = new Matrix4x4();
