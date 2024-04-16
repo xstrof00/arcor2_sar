@@ -10,6 +10,7 @@ using UnityEngine;
 public class GameManager : Base.Singleton<GameManager>
 {
     private List<ActionPoint> actionPoints = new List<ActionPoint>();
+    internal PackageInfoData packageInfo;
 
     private enum ScreenStateEnum
     {
@@ -53,7 +54,11 @@ public class GameManager : Base.Singleton<GameManager>
     public void OpenProject(Scene scene, Project project)
     {
         PrintStateInfoText(ScreenStateEnum.EditingProject);
+        SpawnProject(scene, project);
+    }
 
+    private void SpawnProject(Scene scene, Project project)
+    {
         foreach (var ap in project.ActionPoints)
         {
             if (project.ActionPoints.Count != 0)
@@ -62,7 +67,7 @@ public class GameManager : Base.Singleton<GameManager>
                 AddActionPointToScene(ap);
                 SpawnActionsInScene(ap.Actions, ap.Id);
             }
-        }   
+        }
     }
 
     public void PackageStateUpdated(PackageStateData packageStateData)
@@ -80,12 +85,25 @@ public class GameManager : Base.Singleton<GameManager>
             case PackageStateData.StateEnum.Paused:
                 PrintStateInfoText(ScreenStateEnum.PausedPackage);
                 break;
+
+            case PackageStateData.StateEnum.Stopped:
+                StopPackage();
+                break;
         }
+    }
+
+    public void PackageInfoUpdated()
+    {
+        Project project = packageInfo.Project;
+        Scene scene = packageInfo.Scene;
+        SpawnProject(scene, project);
     }
 
     private void PrintStateInfoText(ScreenStateEnum state)
     {
         GameObject stateInfo = GameObject.Find("StateInfoText");
+        GameObject smallInfo = GameObject.Find("SmallInfoText");
+
         if (stateInfo == null)
         {
             stateInfo = Instantiate(Resources.Load("StateInfoText") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
@@ -93,42 +111,54 @@ public class GameManager : Base.Singleton<GameManager>
         }
         TMP_Text stateInfoText = stateInfo.GetComponent<TMP_Text>();
 
+        if (smallInfo == null)
+        {
+            smallInfo = Instantiate(Resources.Load("SmallInfoText") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
+            smallInfo.name = "SmallInfoText";
+        }
+        TMP_Text smallInfoText = smallInfo.GetComponent<TMP_Text>();
+        smallInfoText.text = "";
+
         switch (state)
         {
             case ScreenStateEnum.MainScreen:
                 stateInfoText.text = "Main screen";
                 stateInfoText.color = new Color32(255, 255, 255, 255);
-                stateInfo.GetComponent<TMP_Text>().ForceMeshUpdate();
                 break;
 
             case ScreenStateEnum.EditingScene:
                 stateInfoText.text = "Editing scene";
                 stateInfoText.color = new Color32(0, 150, 255, 255);
-                stateInfo.GetComponent<TMP_Text>().ForceMeshUpdate();
                 break;
 
             case ScreenStateEnum.EditingProject:
                 stateInfoText.text = "Editing project";
                 stateInfoText.color = new Color32(255, 0, 255, 255);
-                stateInfo.GetComponent<TMP_Text>().ForceMeshUpdate();
                 break;
 
             case ScreenStateEnum.RunningPackage:
-                stateInfoText.text = "Running";
+                stateInfoText.text = "Running program";
                 stateInfoText.color = new Color32(0, 255, 0, 255);
-                stateInfo.GetComponent<TMP_Text>().ForceMeshUpdate();
                 break;
 
             case ScreenStateEnum.PausingPackage:
-                stateInfoText.text = "Pausing";
+                stateInfoText.text = "Pausing program";
                 stateInfoText.color = new Color32(255, 0, 100, 255);
-                stateInfo.GetComponent<TMP_Text>().ForceMeshUpdate();
+
+                smallInfoText.text = "Robot is finishing action, please wait";
+                smallInfoText.color = new Color32(255, 255, 255, 255);
                 break;
 
             case ScreenStateEnum.PausedPackage:
                 stateInfoText.text = "Paused";
                 stateInfoText.color = new Color32(255, 0, 0, 255);
-                stateInfo.GetComponent<TMP_Text>().ForceMeshUpdate();
+                break;
+
+            default:
+                if(smallInfo != null)
+                {
+                    Destroy(smallInfo.gameObject);
+                }
                 break;
         }
     }
@@ -139,6 +169,12 @@ public class GameManager : Base.Singleton<GameManager>
     }
 
     public void CloseProject()
+    {
+        DestroyObjectPrefabs();
+        actionPoints.Clear();
+    }
+
+    private void StopPackage()
     {
         DestroyObjectPrefabs();
         actionPoints.Clear();

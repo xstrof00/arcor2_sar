@@ -696,7 +696,8 @@ namespace Base {
         /// <param name="obj">Message from server</param>
         private void HandlePackageInfo(string obj) {
             IO.Swagger.Model.PackageInfo packageInfo = JsonConvert.DeserializeObject<IO.Swagger.Model.PackageInfo>(obj);
-            //GameManager.Instance.PackageInfo = packageInfo.Data;
+            GameManager.Instance.packageInfo = packageInfo.Data;
+            GameManager.Instance.PackageInfoUpdated();
         }
 
         /// <summary>
