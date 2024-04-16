@@ -1,13 +1,13 @@
 using Base;
 using IO.Swagger.Model;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Security.Cryptography;
+using System.Linq;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 
-public class GameManager : Singleton<GameManager>
+public class GameManager : Base.Singleton<GameManager>
 {
     private List<ActionPoint> actionPoints = new List<ActionPoint>();
 
@@ -45,22 +45,24 @@ public class GameManager : Singleton<GameManager>
         PrintStateInfoText(ScreenStateEnum.MainScreen);
     }
 
+    public void OpenScene(Scene scene)
+    {
+        PrintStateInfoText(ScreenStateEnum.EditingScene);
+    }
+
     public void OpenProject(Scene scene, Project project)
     {
         PrintStateInfoText(ScreenStateEnum.EditingProject);
 
         foreach (var ap in project.ActionPoints)
         {
-            ActionPoint newAp = ap;
-
-            actionPoints.Add(newAp);
-            AddActionPointToScene(newAp);
-        }
-    }
-
-    public void OpenScene(Scene scene)
-    {
-        PrintStateInfoText(ScreenStateEnum.EditingScene);
+            if (project.ActionPoints.Count != 0)
+            {
+                actionPoints.Add(ap);
+                AddActionPointToScene(ap);
+                SpawnActionsInScene(ap.Actions, ap.Id);
+            }
+        }   
     }
 
     public void PackageStateUpdated(PackageStateData packageStateData)
@@ -139,6 +141,7 @@ public class GameManager : Singleton<GameManager>
     public void CloseProject()
     {
         DestroyObjectPrefabs();
+        actionPoints.Clear();
     }
 
     private void ApAdd(object sender, ProjectActionPointEventArgs args)
@@ -162,12 +165,91 @@ public class GameManager : Singleton<GameManager>
         DestroyActionPointInScene(args.Data);
     }
 
+    public void ActionAdded(IO.Swagger.Model.Action action, string parentId)
+    {
+        ActionPoint parentActionPoint = actionPoints.FirstOrDefault(x => x.Id == parentId);
+
+        if (parentActionPoint == null)
+        {
+            Debug.LogError("Parent action point with id " + parentId + " not found");
+            return;
+        }
+
+        if (parentActionPoint.Actions == null)
+        {
+            parentActionPoint.Actions = new List<IO.Swagger.Model.Action>();
+        }
+
+        AddActionToScene(action, parentId);
+        parentActionPoint.Actions.Add(action);
+    }
+
+    public void ActionRemoved(BareAction action)
+    {
+        ActionPoint parentActionPoint = actionPoints.FirstOrDefault(x => x.Actions.Any(y => y.Id == action.Id));
+        
+        if(parentActionPoint != null)
+        {
+            IO.Swagger.Model.Action removedAction = parentActionPoint.Actions.FirstOrDefault(x => x.Id == action.Id);
+            parentActionPoint.Actions.Remove(removedAction);
+        }
+
+        DestroyActionInScene(action.Id);
+    }
+
     private void AddActionPointToScene(ActionPoint ap)
     {
         GameObject newActionPoint = Instantiate(Resources.Load("ActionPointPrefab") as GameObject,
                 AREditorToSARPosition(ap.Position),
                 Quaternion.identity, GameObject.FindGameObjectWithTag("Canvas").transform);
         newActionPoint.name = ap.Id;
+    }
+
+    private void AddActionToScene(IO.Swagger.Model.Action action, string parentId)
+    {
+        GameObject parentActionPointInScene = GameObject.Find(parentId);
+
+        ActionPoint parentActionPoint = actionPoints.Find(x => x.Id.Equals(parentId));
+
+        Debug.LogError("Parent action point ID: " + parentActionPoint.Id);
+
+        float moveActionByNumberOfExisting = 0.0f;
+
+        foreach (var foundAction in parentActionPoint.Actions)
+        {
+            moveActionByNumberOfExisting += 0.15f;
+        }
+        
+        GameObject newAction = Instantiate(Resources.Load("ActionText") as GameObject,
+                new Vector3(parentActionPointInScene.transform.position.x, parentActionPointInScene.transform.position.y + moveActionByNumberOfExisting, 
+                parentActionPointInScene.transform.position.z), Quaternion.identity, parentActionPointInScene.transform);
+        newAction.transform.Rotate(0f, 0f, 180f);
+        newAction.name = action.Id;
+        
+        TMP_Text actionText = newAction.GetComponent<TMP_Text>();
+        actionText.text = action.Name;
+    }
+
+    private void SpawnActionsInScene(List<IO.Swagger.Model.Action> actions, string parentId)
+    {
+        GameObject parentActionPointInScene = GameObject.Find(parentId);
+
+        ActionPoint parentActionPoint = actionPoints.Find(x => x.Id.Equals(parentId));
+
+        float moveActionByNumberOfExisting = 0.0f;
+
+        foreach (var foundAction in actions)
+        {
+            GameObject newAction = Instantiate(Resources.Load("ActionText") as GameObject,
+                new Vector3(parentActionPointInScene.transform.position.x, parentActionPointInScene.transform.position.y + moveActionByNumberOfExisting,
+                parentActionPointInScene.transform.position.z), Quaternion.identity, parentActionPointInScene.transform);
+            newAction.transform.Rotate(0f, 0f, 180f);
+            newAction.name = foundAction.Id;
+
+            TMP_Text actionText = newAction.GetComponent<TMP_Text>();
+            actionText.text = foundAction.Name;
+            moveActionByNumberOfExisting += 0.15f;
+        }
     }
 
     private void UpdateActionPointPoistionInScene(string id)
@@ -177,25 +259,30 @@ public class GameManager : Singleton<GameManager>
         apInScene.transform.position = AREditorToSARPosition(actionPoint.Position);
     }
 
-    private Vector3 AREditorToSARPosition(Position passedPosition)
-    {
-        Vector3 position = new Vector3();
-        position.Set(-1 * 10 * (float)passedPosition.X, -1 * 10 * (float)passedPosition.Y, 0.0f);
-        return position;
-    }
-
     private void DestroyActionPointInScene(string id)
     {
         GameObject removedAp = GameObject.Find(id);
         Destroy(removedAp);
     }
 
+    private void DestroyActionInScene(string id)
+    {
+        GameObject removedAction = GameObject.Find(id);
+        Destroy(removedAction);
+    }
+
     private void DestroyObjectPrefabs()
     {
-        GameObject[] gameObjects = GameObject.FindGameObjectsWithTag("ObjectPrefab");
+        GameObject[] gameObjects = GameObject.FindGameObjectsWithTag("Prefab");
         foreach (var gameObject in gameObjects)
         {
             Destroy(gameObject.gameObject);
         }
+    }
+    private Vector3 AREditorToSARPosition(Position passedPosition)
+    {
+        Vector3 position = new Vector3();
+        position.Set(-1 * 10 * (float)passedPosition.X, -1 * 10 * (float)passedPosition.Y, 0.0f);
+        return position;
     }
 }

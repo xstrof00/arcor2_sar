@@ -775,10 +775,10 @@ namespace Base {
             switch (actionChanged.ChangeType) {
                 case IO.Swagger.Model.ActionChanged.ChangeTypeEnum.Add:
                     var action = JsonConvert.DeserializeAnonymousType(data, actionChangedFields);
-                    //ProjectManager.Instance.ActionAdded(action.data, actionChanged.ParentId);
+                    GameManager.Instance.ActionAdded(action.data, actionChanged.ParentId);
                     break;
                 case IO.Swagger.Model.ActionChanged.ChangeTypeEnum.Remove:
-                    //ProjectManager.Instance.ActionRemoved(actionChanged.Data);
+                    GameManager.Instance.ActionRemoved(actionChanged.Data);
                     break;
                 case IO.Swagger.Model.ActionChanged.ChangeTypeEnum.Update:
                     var actionUpdate = JsonConvert.DeserializeAnonymousType(data, actionChangedFields);
