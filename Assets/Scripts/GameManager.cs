@@ -2,6 +2,7 @@ using Base;
 using IO.Swagger.Model;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Security.Cryptography;
 using TMPro;
@@ -392,6 +393,7 @@ public class GameManager : Base.Singleton<GameManager>
             {
                 case "DobotMagician":
                     addedGameObject = Instantiate(Resources.Load("DobotMagician") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
+                    ShowDobotMagicianRange(addedGameObject);
                     break;
 
                 case "sphere":
@@ -432,6 +434,13 @@ public class GameManager : Base.Singleton<GameManager>
         }
     }
 
+    private void ShowDobotMagicianRange(GameObject dobotMagician)
+    {
+        GameObject dobotMagicianRange = Instantiate(Resources.Load("DobotMagicianRange") as GameObject, dobotMagician.transform);
+        DrawCircle(dobotMagicianRange, 3.2f, 0.01f);
+        dobotMagicianRange.transform.Rotate(90f, 0, 0);
+    }
+
     private Vector3 AREditorToSARPosition(Position position)
     {
         Vector3 convertedPosition = new Vector3();
@@ -451,5 +460,27 @@ public class GameManager : Base.Singleton<GameManager>
         GameObject sceneObjectInGame = GameObject.Find(sceneObject.Id);
         sceneObjectInGame.transform.rotation = AREditorToSAROrientation(sceneObject.Pose.Orientation);
         sceneObjectInGame.transform.position = AREditorToSARPosition(sceneObject.Pose.Position);
+    }
+
+    //Following code in this function was adapted from: https://www.loekvandenouweland.com/content/use-linerenderer-in-unity-to-draw-a-circle.html
+    private void DrawCircle(GameObject container, float radius, float lineWidth)
+    {
+        var segments = 360;
+        var line = container.AddComponent<LineRenderer>();
+        line.useWorldSpace = false;
+        line.startWidth = lineWidth;
+        line.endWidth = lineWidth;
+        line.positionCount = segments + 1;
+
+        var pointCount = segments + 1;
+        var points = new Vector3[pointCount];
+
+        for (int i = 0; i < pointCount; i++)
+        {
+            var rad = Mathf.Deg2Rad * (i * 360f / segments);
+            points[i] = new Vector3(Mathf.Sin(rad) * radius, 0, Mathf.Cos(rad) * radius);
+        }
+
+        line.SetPositions(points);
     }
 }
