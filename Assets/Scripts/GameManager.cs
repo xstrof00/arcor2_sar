@@ -3,13 +3,16 @@ using IO.Swagger.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameManager : Base.Singleton<GameManager>
 {
     private List<ActionPoint> actionPoints = new List<ActionPoint>();
+    private List<SceneObject> sceneObjects = new List<SceneObject>();
     internal PackageInfoData packageInfo;
 
     private enum ScreenStateEnum
@@ -28,12 +31,14 @@ public class GameManager : Base.Singleton<GameManager>
         WebsocketManager.Instance.OnActionPointAdded += ApAdd;
         WebsocketManager.Instance.OnActionPointBaseUpdated += ApChangeUpdateBase;
         WebsocketManager.Instance.OnActionPointRemoved += ApRemove;
+
+        WebsocketManager.Instance.OnObjectTypeUpdated += ObjectTypeUpdate;
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 
     public void ConnectToServer()
@@ -49,30 +54,50 @@ public class GameManager : Base.Singleton<GameManager>
     public void OpenScene(Scene scene)
     {
         PrintStateInfoText(ScreenStateEnum.EditingScene);
+        SpawnSceneInGame(scene);
     }
 
     public void OpenProject(Scene scene, Project project)
     {
         PrintStateInfoText(ScreenStateEnum.EditingProject);
-        SpawnProject(scene, project);
+        SpawnProjectInGame(scene, project);
     }
 
-    private void SpawnProject(Scene scene, Project project)
+
+    private void SpawnSceneInGame(Scene scene)
     {
+        foreach (var sceneObject in scene.Objects)
+        {
+            sceneObjects.Add(sceneObject);
+            AddSceneObjectToGame(sceneObject);
+        }
+    }
+
+    private void SpawnProjectInGame(Scene scene, Project project)
+    {
+        foreach (var sceneObject in scene.Objects)
+        {
+            if (scene.Objects.Count != 0)
+            {
+                sceneObjects.Add(sceneObject);
+                AddSceneObjectToGame(sceneObject);
+            }
+        }
+
         foreach (var ap in project.ActionPoints)
         {
             if (project.ActionPoints.Count != 0)
             {
                 actionPoints.Add(ap);
-                AddActionPointToScene(ap);
-                SpawnActionsInScene(ap.Actions, ap.Id);
+                AddActionPointToGame(ap);
+                SpawnActionsInGame(ap.Actions, ap.Id);
             }
         }
     }
 
     public void PackageStateUpdated(PackageStateData packageStateData)
     {
-        switch(packageStateData.State)
+        switch (packageStateData.State)
         {
             case PackageStateData.StateEnum.Running:
                 PrintStateInfoText(ScreenStateEnum.RunningPackage);
@@ -96,7 +121,7 @@ public class GameManager : Base.Singleton<GameManager>
     {
         Project project = packageInfo.Project;
         Scene scene = packageInfo.Scene;
-        SpawnProject(scene, project);
+        SpawnProjectInGame(scene, project);
     }
 
     private void PrintStateInfoText(ScreenStateEnum state)
@@ -145,7 +170,7 @@ public class GameManager : Base.Singleton<GameManager>
                 stateInfoText.text = "Pausing program";
                 stateInfoText.color = new Color32(255, 0, 100, 255);
 
-                smallInfoText.text = "Robot is finishing action, please wait";
+                smallInfoText.text = "Please wait, robot is finishing action";
                 smallInfoText.color = new Color32(255, 255, 255, 255);
                 break;
 
@@ -155,7 +180,7 @@ public class GameManager : Base.Singleton<GameManager>
                 break;
 
             default:
-                if(smallInfo != null)
+                if (smallInfo != null)
                 {
                     Destroy(smallInfo.gameObject);
                 }
@@ -165,18 +190,19 @@ public class GameManager : Base.Singleton<GameManager>
 
     public void CloseScene()
     {
-        DestroyObjectPrefabs();
+        DestroyObjectsInGame();
+        sceneObjects.Clear();
     }
 
     public void CloseProject()
     {
-        DestroyObjectPrefabs();
+        DestroyObjectsInGame();
         actionPoints.Clear();
     }
 
     private void StopPackage()
     {
-        DestroyObjectPrefabs();
+        DestroyObjectsInGame();
         actionPoints.Clear();
     }
 
@@ -184,21 +210,60 @@ public class GameManager : Base.Singleton<GameManager>
     {
         ActionPoint newAp = args.ActionPoint;
         actionPoints.Add(newAp);
-        AddActionPointToScene(newAp);
+        AddActionPointToGame(newAp);
     }
 
     private void ApChangeUpdateBase(object sender, BareActionPointEventArgs args)
     {
         ActionPoint updatedAp = actionPoints.Find(x => x.Id == args.ActionPoint.Id);
         updatedAp.Position = args.ActionPoint.Position;
-        UpdateActionPointPoistionInScene(args.ActionPoint.Id);
+        UpdateActionPointPoistionInGame(args.ActionPoint.Id);
     }
 
     private void ApRemove(object sender, StringEventArgs args)
     {
         ActionPoint removedAp = actionPoints.Find(x => x.Id == args.Data);
         actionPoints.Remove(removedAp);
-        DestroyActionPointInScene(args.Data);
+        DestroyObjectInGame(args.Data);
+    }
+
+    private void ObjectTypeUpdate(object sender, ObjectTypesEventArgs args)
+    {
+        foreach (var objectType in args.ObjectTypes)
+        {
+            UpdateSceneObjectDimensions(objectType);
+        }
+    }
+
+    private void UpdateSceneObjectDimensions(ObjectTypeMeta objectType)
+    {
+        SceneObject sceneObject = sceneObjects.Find(x => x.Type == objectType.Type);
+        GameObject sceneObjectInGame = null;
+        if (sceneObject != null)
+        {
+            sceneObjectInGame = GameObject.Find(sceneObject.Id);
+        }
+
+        if(sceneObjectInGame != null)
+        {
+            Image image = sceneObjectInGame.GetComponent<Image>();
+            Vector2 dimensions = new Vector2();
+            switch (objectType.ObjectModel.Type)
+            {
+                case ObjectModel.TypeEnum.Sphere:
+                    dimensions = new Vector2((float)objectType.ObjectModel.Sphere.Radius * 10, (float)objectType.ObjectModel.Sphere.Radius * 10);
+                    break;
+
+                case ObjectModel.TypeEnum.Cylinder:
+                    dimensions = new Vector2((float)objectType.ObjectModel.Cylinder.Radius * 10, (float)objectType.ObjectModel.Cylinder.Radius * 10);
+                    break;
+
+                case ObjectModel.TypeEnum.Box:
+                    dimensions = new Vector2((float)objectType.ObjectModel.Box.SizeX * 10, (float)objectType.ObjectModel.Box.SizeY * 10);
+                    break;
+            }
+            image.rectTransform.localScale = dimensions;
+        }
     }
 
     public void ActionAdded(IO.Swagger.Model.Action action, string parentId)
@@ -216,32 +281,33 @@ public class GameManager : Base.Singleton<GameManager>
             parentActionPoint.Actions = new List<IO.Swagger.Model.Action>();
         }
 
-        AddActionToScene(action, parentId);
+        AddActionToGame(action, parentId);
         parentActionPoint.Actions.Add(action);
     }
 
     public void ActionRemoved(BareAction action)
     {
         ActionPoint parentActionPoint = actionPoints.FirstOrDefault(x => x.Actions.Any(y => y.Id == action.Id));
-        
-        if(parentActionPoint != null)
+
+        if (parentActionPoint != null)
         {
             IO.Swagger.Model.Action removedAction = parentActionPoint.Actions.FirstOrDefault(x => x.Id == action.Id);
             parentActionPoint.Actions.Remove(removedAction);
         }
 
-        DestroyActionInScene(action.Id);
+        DestroyObjectInGame(action.Id);
     }
 
-    private void AddActionPointToScene(ActionPoint ap)
+    private void AddActionPointToGame(ActionPoint ap)
     {
         GameObject newActionPoint = Instantiate(Resources.Load("ActionPointPrefab") as GameObject,
                 AREditorToSARPosition(ap.Position),
                 Quaternion.identity, GameObject.FindGameObjectWithTag("Canvas").transform);
         newActionPoint.name = ap.Id;
+        newActionPoint.GetComponent<Image>().color = new Color32(70, 0, 255, 255);
     }
 
-    private void AddActionToScene(IO.Swagger.Model.Action action, string parentId)
+    private void AddActionToGame(IO.Swagger.Model.Action action, string parentId)
     {
         GameObject parentActionPointInScene = GameObject.Find(parentId);
 
@@ -255,18 +321,18 @@ public class GameManager : Base.Singleton<GameManager>
         {
             moveActionByNumberOfExisting += 0.15f;
         }
-        
+
         GameObject newAction = Instantiate(Resources.Load("ActionText") as GameObject,
-                new Vector3(parentActionPointInScene.transform.position.x, parentActionPointInScene.transform.position.y + moveActionByNumberOfExisting, 
+                new Vector3(parentActionPointInScene.transform.position.x, parentActionPointInScene.transform.position.y + moveActionByNumberOfExisting,
                 parentActionPointInScene.transform.position.z), Quaternion.identity, parentActionPointInScene.transform);
         newAction.transform.Rotate(0f, 0f, 180f);
         newAction.name = action.Id;
-        
+
         TMP_Text actionText = newAction.GetComponent<TMP_Text>();
         actionText.text = action.Name;
     }
 
-    private void SpawnActionsInScene(List<IO.Swagger.Model.Action> actions, string parentId)
+    private void SpawnActionsInGame(List<IO.Swagger.Model.Action> actions, string parentId)
     {
         GameObject parentActionPointInScene = GameObject.Find(parentId);
 
@@ -288,26 +354,76 @@ public class GameManager : Base.Singleton<GameManager>
         }
     }
 
-    private void UpdateActionPointPoistionInScene(string id)
+    private void UpdateActionPointPoistionInGame(string id)
     {
         ActionPoint actionPoint = actionPoints.Find(x => x.Id == id);
         GameObject apInScene = GameObject.Find(id);
         apInScene.transform.position = AREditorToSARPosition(actionPoint.Position);
     }
 
-    private void DestroyActionPointInScene(string id)
+    public void SceneObjectAdded(SceneObject sceneObject)
     {
-        GameObject removedAp = GameObject.Find(id);
-        Destroy(removedAp);
+        sceneObjects.Add(sceneObject);
+        AddSceneObjectToGame(sceneObject);
     }
 
-    private void DestroyActionInScene(string id)
+    public void SceneObjectRemoved(SceneObject sceneObject)
     {
-        GameObject removedAction = GameObject.Find(id);
-        Destroy(removedAction);
+        sceneObjects.Remove(sceneObject);
+        DestroyObjectInGame(sceneObject.Id);
     }
 
-    private void DestroyObjectPrefabs()
+    public void SceneObjectUpdated(SceneObject sceneObject)
+    {
+        SceneObject updatedSceneObject = sceneObjects.Find(x => x.Id == sceneObject.Id);
+        updatedSceneObject = sceneObject;
+        UpdateSceneObjectInGame(sceneObject);
+    }
+
+    private void AddSceneObjectToGame(SceneObject sceneObject)
+    {
+        if (sceneObject != null)
+        {
+            string[] parts = sceneObject.Type.Split("_");
+            string objectTypeWithoutNumber = parts[0];
+            GameObject addedGameObject = null;
+
+            switch (objectTypeWithoutNumber)
+            {
+                case "DobotMagician":
+                    addedGameObject = Instantiate(Resources.Load("DobotMagician") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
+                    break;
+
+                case "sphere":
+                    addedGameObject = Instantiate(Resources.Load("Sphere") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
+                    break;
+
+                case "cylinder":
+                    addedGameObject = Instantiate(Resources.Load("Sphere") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
+                    break;
+
+                case "cube":
+                    addedGameObject = Instantiate(Resources.Load("Cube") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
+                    break;
+            }
+            addedGameObject.GetComponent<Image>().color = new Color32(255, 228, 0, 255);
+            addedGameObject.name = sceneObject.Id;
+            SetSceneObjectPose(sceneObject);
+        }
+    }
+
+    private void UpdateSceneObjectInGame(SceneObject sceneObject)
+    {
+        SetSceneObjectPose(sceneObject);
+    }
+
+    private void DestroyObjectInGame(string id)
+    {
+        GameObject removedPrefabObject = GameObject.Find(id);
+        Destroy(removedPrefabObject.gameObject);
+    }
+
+    private void DestroyObjectsInGame()
     {
         GameObject[] gameObjects = GameObject.FindGameObjectsWithTag("Prefab");
         foreach (var gameObject in gameObjects)
@@ -315,10 +431,25 @@ public class GameManager : Base.Singleton<GameManager>
             Destroy(gameObject.gameObject);
         }
     }
-    private Vector3 AREditorToSARPosition(Position passedPosition)
+
+    private Vector3 AREditorToSARPosition(Position position)
     {
-        Vector3 position = new Vector3();
-        position.Set(-1 * 10 * (float)passedPosition.X, -1 * 10 * (float)passedPosition.Y, 0.0f);
-        return position;
+        Vector3 convertedPosition = new Vector3();
+        convertedPosition.Set(-1 * 10 * (float)position.X, -1 * 10 * (float)position.Y, 0.0f);
+        return convertedPosition;
+    }
+
+    private Quaternion AREditorToSAROrientation(Orientation orientation)
+    {
+        Quaternion convertedOrientation = new Quaternion();
+        convertedOrientation.Set((float)orientation.X, (float)orientation.Y, (float)orientation.Z, (float)orientation.W);
+        return convertedOrientation;
+    }
+
+    private void SetSceneObjectPose(SceneObject sceneObject)
+    {
+        GameObject sceneObjectInGame = GameObject.Find(sceneObject.Id);
+        sceneObjectInGame.transform.rotation = AREditorToSAROrientation(sceneObject.Pose.Orientation);
+        sceneObjectInGame.transform.position = AREditorToSARPosition(sceneObject.Pose.Position);
     }
 }

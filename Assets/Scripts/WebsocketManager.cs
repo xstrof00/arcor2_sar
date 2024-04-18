@@ -908,13 +908,13 @@ namespace Base {
             IO.Swagger.Model.SceneObjectChanged sceneObjectChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.SceneObjectChanged>(data);
             switch (sceneObjectChanged.ChangeType) {
                 case IO.Swagger.Model.SceneObjectChanged.ChangeTypeEnum.Add:
-                    //SceneManager.Instance.SceneObjectAdded(sceneObjectChanged.Data);
+                    GameManager.Instance.SceneObjectAdded(sceneObjectChanged.Data);
                     break;
                 case IO.Swagger.Model.SceneObjectChanged.ChangeTypeEnum.Remove:
-                    //SceneManager.Instance.SceneObjectRemoved(sceneObjectChanged.Data);
+                    GameManager.Instance.SceneObjectRemoved(sceneObjectChanged.Data);
                     break;
                 case IO.Swagger.Model.SceneObjectChanged.ChangeTypeEnum.Update:
-                    //SceneManager.Instance.SceneObjectUpdated(sceneObjectChanged.Data);
+                    GameManager.Instance.SceneObjectUpdated(sceneObjectChanged.Data);
                     break;
                 case IO.Swagger.Model.SceneObjectChanged.ChangeTypeEnum.Updatebase:
                     //SceneManager.Instance.SceneObjectBaseUpdated(sceneObjectChanged.Data);
