@@ -3,6 +3,7 @@ using IO.Swagger.Model;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Drawing;
 using System.Linq;
 using System.Security.Cryptography;
 using TMPro;
@@ -301,11 +302,27 @@ public class GameManager : Base.Singleton<GameManager>
 
     private void AddActionPointToGame(ActionPoint ap)
     {
-        GameObject newActionPoint = Instantiate(Resources.Load("ActionPointPrefab") as GameObject,
-                AREditorToSARPosition(ap.Position),
-                Quaternion.identity, GameObject.FindGameObjectWithTag("Canvas").transform);
+        Vector3 apPosition = AREditorToSARPosition(ap.Position);
+        GameObject parent = GameObject.FindGameObjectWithTag("Canvas");
+        GameObject newActionPoint;
+        if (!string.IsNullOrEmpty(ap.Parent))
+        {
+            parent = GameObject.Find(ap.Parent);
+            newActionPoint = Instantiate(Resources.Load("ActionPointPrefab") as GameObject, Vector3.zero, Quaternion.identity, parent.transform);
+            newActionPoint.transform.localPosition = apPosition;
+        }
+        else
+        {
+            newActionPoint = Instantiate(Resources.Load("ActionPointPrefab") as GameObject, apPosition, Quaternion.identity, parent.transform);
+        }
         newActionPoint.name = ap.Id;
         newActionPoint.GetComponent<Image>().color = new Color32(70, 0, 255, 255);
+    }
+
+    private Position addTwoPositions(Position position1, Position position2)
+    {
+        Position addedPosition = new Position(position1.X + position2.X, position1.Y + position2.Y, position1.Z + position2.Z);
+        return addedPosition;
     }
 
     private void AddActionToGame(IO.Swagger.Model.Action action, string parentId)
@@ -359,7 +376,15 @@ public class GameManager : Base.Singleton<GameManager>
     {
         ActionPoint actionPoint = actionPoints.Find(x => x.Id == id);
         GameObject apInScene = GameObject.Find(id);
-        apInScene.transform.position = AREditorToSARPosition(actionPoint.Position);
+
+        if (!string.IsNullOrEmpty(actionPoint.Parent))
+        {
+            apInScene.transform.localPosition = AREditorToSARPosition(actionPoint.Position);
+        }
+        else
+        {
+            apInScene.transform.position = AREditorToSARPosition(actionPoint.Position);
+        }
     }
 
     public void SceneObjectAdded(SceneObject sceneObject)
@@ -393,22 +418,26 @@ public class GameManager : Base.Singleton<GameManager>
             {
                 case "DobotMagician":
                     addedGameObject = Instantiate(Resources.Load("DobotMagician") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
+                    addedGameObject.GetComponent<Image>().color = new Color32(50, 255, 0, 255);
                     ShowDobotMagicianRange(addedGameObject);
                     break;
 
                 case "sphere":
                     addedGameObject = Instantiate(Resources.Load("Sphere") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
+                    addedGameObject.GetComponent<Image>().color = new Color32(255, 228, 0, 255);
                     break;
 
                 case "cylinder":
                     addedGameObject = Instantiate(Resources.Load("Sphere") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
+                    addedGameObject.GetComponent<Image>().color = new Color32(255, 228, 0, 255);
                     break;
 
                 case "cube":
                     addedGameObject = Instantiate(Resources.Load("Cube") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
+                    addedGameObject.GetComponent<Image>().color = new Color32(255, 228, 0, 255);
                     break;
             }
-            addedGameObject.GetComponent<Image>().color = new Color32(255, 228, 0, 255);
+            
             addedGameObject.name = sceneObject.Id;
             SetSceneObjectPose(sceneObject);
         }
@@ -482,5 +511,8 @@ public class GameManager : Base.Singleton<GameManager>
         }
 
         line.SetPositions(points);
+        line.material = new Material(Shader.Find("Sprites/Default"));
+        line.startColor = new Color32(50, 255, 0, 255);
+        line.endColor = new Color32(50, 255, 0, 255);
     }
 }
