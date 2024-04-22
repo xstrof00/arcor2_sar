@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UIElements;
 using static System.Math;
 
 
@@ -12,6 +13,11 @@ public class TransformProjector : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        projector = GameObject.Find("Projector");
+        kinect = GameObject.Find("Kinect");
+        xmlFile = Resources.Load("calibration_result") as TextAsset;
+        arUcoMarker = GameObject.Find("ArUco");
+
         ProjectorCalibrationData projCalibrationData = new ProjectorCalibrationData(xmlFile);
         Camera cam = projector.GetComponent<Camera>();
 

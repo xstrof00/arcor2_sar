@@ -123,7 +123,7 @@ public class GameManager : Base.Singleton<GameManager>
     {
         Project project = packageInfo.Project;
         Scene scene = packageInfo.Scene;
-        SpawnProjectInGame(scene, project);
+        //SpawnProjectInGame(scene, project);
     }
 
     private void PrintStateInfoText(ScreenStateEnum state)
@@ -436,10 +436,15 @@ public class GameManager : Base.Singleton<GameManager>
                     addedGameObject = Instantiate(Resources.Load("Cube") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
                     addedGameObject.GetComponent<Image>().color = new Color32(255, 228, 0, 255);
                     break;
+
+                default:
+                    break;
             }
-            
-            addedGameObject.name = sceneObject.Id;
-            SetSceneObjectPose(sceneObject);
+            if(addedGameObject != null)
+            {
+                addedGameObject.name = sceneObject.Id;
+                SetSceneObjectPose(sceneObject);
+            }
         }
     }
 

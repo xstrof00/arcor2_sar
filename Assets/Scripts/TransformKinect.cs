@@ -13,13 +13,18 @@ public class TransformKinect : Singleton<TransformKinect>
     // Start is called before the first frame update
     void Start()
     {
+        kinect = GameObject.Find("Kinect");
+        xmlFile = Resources.Load("calibration_result") as TextAsset;
+        jsonFile = Resources.Load("kinectCalibrationData") as TextAsset;
+
         KinectCalibrationData kinectCalibrationData = new KinectCalibrationData(xmlFile, jsonFile);
+        Camera cam = kinect.GetComponent<Camera>();
 
         SetKinectPosition(kinectCalibrationData);
         SetKinectRotation(kinectCalibrationData);
 
         double kinectFovVertical = CalculateKinectFovVertical(kinectCalibrationData);
-        kinect.GetComponent<Camera>().fieldOfView = (float)kinectFovVertical;
+        cam.fieldOfView = (float)kinectFovVertical;
 
         GameManager.Instance.ConnectToServer();
     }
