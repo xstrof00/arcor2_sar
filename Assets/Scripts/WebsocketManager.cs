@@ -588,6 +588,7 @@ namespace Base {
                 if (!string.IsNullOrEmpty(actionStateBefore.Data.ActionId)) {
                     puck_id = actionStateBefore.Data.ActionId;
 
+                    GameManager.Instance.ActionStateBefore(actionStateBefore.Data);
                     /*if (!ProjectManager.Instance.Valid) {
                         Debug.LogWarning("Project not yet loaded, ignoring current action");
                         GameManager.Instance.ActionRunningOnStartupId = puck_id;

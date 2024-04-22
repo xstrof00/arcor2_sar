@@ -1,5 +1,6 @@
 using Base;
 using IO.Swagger.Model;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -24,7 +25,9 @@ public class GameManager : Base.Singleton<GameManager>
         EditingProject,
         RunningPackage,
         PausingPackage,
-        PausedPackage
+        PausedPackage,
+        StoppingPackage,
+        StoppedPackage
     }
 
     // Start is called before the first frame update
@@ -113,6 +116,10 @@ public class GameManager : Base.Singleton<GameManager>
                 PrintStateInfoText(ScreenStateEnum.PausedPackage);
                 break;
 
+            case PackageStateData.StateEnum.Stopping:
+                PrintStateInfoText(ScreenStateEnum.StoppingPackage);
+                break;
+
             case PackageStateData.StateEnum.Stopped:
                 StopPackage();
                 break;
@@ -121,9 +128,16 @@ public class GameManager : Base.Singleton<GameManager>
 
     public void PackageInfoUpdated()
     {
-        Project project = packageInfo.Project;
-        Scene scene = packageInfo.Scene;
-        //SpawnProjectInGame(scene, project);
+        ShowPackageNameInGame();
+    }
+
+    private void ShowPackageNameInGame()
+    {
+        GameObject packageName = Instantiate(Resources.Load("PackageNameText") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
+        TMP_Text packageNameText = packageName.GetComponent<TMP_Text>();
+
+        packageNameText.text = packageInfo.PackageName;
+        packageNameText.color = UnityEngine.Color.white;
     }
 
     private void PrintStateInfoText(ScreenStateEnum state)
@@ -179,6 +193,14 @@ public class GameManager : Base.Singleton<GameManager>
             case ScreenStateEnum.PausedPackage:
                 stateInfoText.text = "Paused";
                 stateInfoText.color = new Color32(255, 0, 0, 255);
+                break;
+
+            case ScreenStateEnum.StoppingPackage:
+                stateInfoText.text = "Stopping program";
+                stateInfoText.color = new Color32(255, 0, 100, 255);
+
+                smallInfoText.text = "Please wait, robot is finishing action";
+                smallInfoText.color = new Color32(255, 255, 255, 255);
                 break;
 
             default:
@@ -300,6 +322,25 @@ public class GameManager : Base.Singleton<GameManager>
         DestroyObjectInGame(action.Id);
     }
 
+    public void ActionStateBefore(ActionStateBeforeData data)
+    {
+        GameObject actionPlace = GameObject.Find("ActionPlace");
+        if(actionPlace == null)
+        {
+            actionPlace = Instantiate(Resources.Load("ActionPlace") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
+            actionPlace.name = "ActionPlace";
+        }
+
+        Image actionPlaceImage = actionPlace.GetComponent<Image>();
+        actionPlaceImage.transform.localScale = new Vector3(1.0f, 1.0f, 0.0f);
+        actionPlaceImage.color = new Color32(255, 0, 0, 255);
+        if(data.Parameters.Count > 0)
+        {
+            IO.Swagger.Model.Pose pose = JsonConvert.DeserializeObject<IO.Swagger.Model.Pose>(data.Parameters[0]);
+            actionPlaceImage.transform.position = AREditorToSARPosition(pose.Position);
+        }
+    }
+
     private void AddActionPointToGame(ActionPoint ap)
     {
         Vector3 apPosition = AREditorToSARPosition(ap.Position);
@@ -317,12 +358,6 @@ public class GameManager : Base.Singleton<GameManager>
         }
         newActionPoint.name = ap.Id;
         newActionPoint.GetComponent<Image>().color = new Color32(70, 0, 255, 255);
-    }
-
-    private Position addTwoPositions(Position position1, Position position2)
-    {
-        Position addedPosition = new Position(position1.X + position2.X, position1.Y + position2.Y, position1.Z + position2.Z);
-        return addedPosition;
     }
 
     private void AddActionToGame(IO.Swagger.Model.Action action, string parentId)
