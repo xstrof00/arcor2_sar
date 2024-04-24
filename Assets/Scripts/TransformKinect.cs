@@ -1,6 +1,4 @@
 using Base;
-using System;
-using TMPro;
 using UnityEngine;
 using static System.Math;
 

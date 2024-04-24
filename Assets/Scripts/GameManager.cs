@@ -2,6 +2,7 @@ using Base;
 using IO.Swagger.Model;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
@@ -48,18 +49,18 @@ public class GameManager : Base.Singleton<GameManager>
 
     public void ShowMainScreen()
     {
-        PrintStateInfoText(ScreenStateEnum.MainScreen);
+        ShowInfoTextInGame(ScreenStateEnum.MainScreen);
     }
 
     public void OpenScene(Scene scene)
     {
-        PrintStateInfoText(ScreenStateEnum.EditingScene);
+        ShowInfoTextInGame(ScreenStateEnum.EditingScene);
         SpawnSceneInGame(scene);
     }
 
     public void OpenProject(Scene scene, Project project)
     {
-        PrintStateInfoText(ScreenStateEnum.EditingProject);
+        ShowInfoTextInGame(ScreenStateEnum.EditingProject);
         SpawnProjectInGame(scene, project);
     }
 
@@ -99,19 +100,19 @@ public class GameManager : Base.Singleton<GameManager>
         switch (packageStateData.State)
         {
             case PackageStateData.StateEnum.Running:
-                PrintStateInfoText(ScreenStateEnum.RunningPackage);
+                ShowInfoTextInGame(ScreenStateEnum.RunningPackage);
                 break;
 
             case PackageStateData.StateEnum.Pausing:
-                PrintStateInfoText(ScreenStateEnum.PausingPackage);
+                ShowInfoTextInGame(ScreenStateEnum.PausingPackage);
                 break;
 
             case PackageStateData.StateEnum.Paused:
-                PrintStateInfoText(ScreenStateEnum.PausedPackage);
+                ShowInfoTextInGame(ScreenStateEnum.PausedPackage);
                 break;
 
             case PackageStateData.StateEnum.Stopping:
-                PrintStateInfoText(ScreenStateEnum.StoppingPackage);
+                ShowInfoTextInGame(ScreenStateEnum.StoppingPackage);
                 break;
 
             case PackageStateData.StateEnum.Stopped:
@@ -138,13 +139,15 @@ public class GameManager : Base.Singleton<GameManager>
     private void ShowPackageNameInGame()
     {
         GameObject packageName = Instantiate(Resources.Load("PackageNameText") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
+        packageName.transform.position = new Vector3(-4.4f, -1.3f, 0f);
+        packageName.transform.rotation = Quaternion.Euler(0f, 0f, 180f);
         TMP_Text packageNameText = packageName.GetComponent<TMP_Text>();
 
         packageNameText.text = packageInfo.PackageName;
         packageNameText.color = UnityEngine.Color.white;
     }
 
-    private void PrintStateInfoText(ScreenStateEnum state)
+    private void ShowInfoTextInGame(ScreenStateEnum state)
     {
         GameObject stateInfo = GameObject.Find("StateInfoText");
         GameObject smallInfo = GameObject.Find("SmallInfoText");
@@ -153,6 +156,8 @@ public class GameManager : Base.Singleton<GameManager>
         {
             stateInfo = Instantiate(Resources.Load("StateInfoText") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
             stateInfo.name = "StateInfoText";
+            stateInfo.transform.position = new Vector3(-4.4f, -1f, 0f);
+            stateInfo.transform.rotation = Quaternion.Euler(0f, 0f, 180f);
         }
         TMP_Text stateInfoText = stateInfo.GetComponent<TMP_Text>();
 
@@ -160,6 +165,8 @@ public class GameManager : Base.Singleton<GameManager>
         {
             smallInfo = Instantiate(Resources.Load("SmallInfoText") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
             smallInfo.name = "SmallInfoText";
+            smallInfo.transform.position = new Vector3(-4.4f, -0.7f, 0f);
+            smallInfo.transform.rotation = Quaternion.Euler(0f, 0f, 180f);
         }
         TMP_Text smallInfoText = smallInfo.GetComponent<TMP_Text>();
         smallInfoText.text = "";
