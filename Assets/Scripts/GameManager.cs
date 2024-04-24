@@ -1,14 +1,9 @@
 using Base;
 using IO.Swagger.Model;
 using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
 using System.Linq;
-using System.Security.Cryptography;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -67,7 +62,6 @@ public class GameManager : Base.Singleton<GameManager>
         PrintStateInfoText(ScreenStateEnum.EditingProject);
         SpawnProjectInGame(scene, project);
     }
-
 
     private void SpawnSceneInGame(Scene scene)
     {
@@ -129,6 +123,16 @@ public class GameManager : Base.Singleton<GameManager>
     public void PackageInfoUpdated()
     {
         ShowPackageNameInGame();
+
+        foreach(var ap in packageInfo.Project.ActionPoints)
+        {
+            actionPoints.Add(ap);
+        }
+
+        foreach(var sceneObject in packageInfo.Scene.Objects)
+        {
+            sceneObjects.Add(sceneObject);
+        }
     }
 
     private void ShowPackageNameInGame()
@@ -296,7 +300,6 @@ public class GameManager : Base.Singleton<GameManager>
 
         if (parentActionPoint == null)
         {
-            Debug.LogError("Parent action point with id " + parentId + " not found");
             return;
         }
 
@@ -324,8 +327,14 @@ public class GameManager : Base.Singleton<GameManager>
 
     public void ActionStateBefore(ActionStateBeforeData data)
     {
+        ShowActionPlaceInGame(data);
+        ShowActionNameInGame(data);
+    }
+
+    private void ShowActionPlaceInGame(ActionStateBeforeData data)
+    {
         GameObject actionPlace = GameObject.Find("ActionPlace");
-        if(actionPlace == null)
+        if (actionPlace == null)
         {
             actionPlace = Instantiate(Resources.Load("ActionPlace") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
             actionPlace.name = "ActionPlace";
@@ -334,11 +343,42 @@ public class GameManager : Base.Singleton<GameManager>
         Image actionPlaceImage = actionPlace.GetComponent<Image>();
         actionPlaceImage.transform.localScale = new Vector3(1.0f, 1.0f, 0.0f);
         actionPlaceImage.color = new Color32(255, 0, 0, 255);
-        if(data.Parameters.Count > 0)
+        if (data.Parameters.Count > 0)
         {
             IO.Swagger.Model.Pose pose = JsonConvert.DeserializeObject<IO.Swagger.Model.Pose>(data.Parameters[0]);
             actionPlaceImage.transform.position = AREditorToSARPosition(pose.Position);
         }
+    }
+
+    private void ShowActionNameInGame(ActionStateBeforeData data)
+    {
+        ActionPoint parentActionPoint = actionPoints.FirstOrDefault(x => x.Actions.Any(y => y.Id == data.ActionId));
+        string runningActionType = null;
+
+        if (parentActionPoint != null)
+        {
+            IO.Swagger.Model.Action runningAction = parentActionPoint.Actions.FirstOrDefault(x => x.Id == data.ActionId);
+            string[] parts = runningAction.Type.Split("/");
+            if(parts.Length > 0)
+            {
+                runningActionType = parts[1];
+            }
+        }
+
+        GameObject parentActionPlace = GameObject.Find("ActionPlace");
+        Vector3 actionNamePosition = new Vector3();
+        if(parentActionPlace != null)
+        {
+            actionNamePosition = parentActionPlace.transform.position + new Vector3(0.0f, 0.6f, 0.0f);
+        }
+
+        GameObject actionName = Instantiate(Resources.Load("ActionNameText") as GameObject, actionNamePosition, Quaternion.Euler(0, 0, 180), GameObject.FindGameObjectWithTag("Canvas").transform);
+        actionName.name = "ActionNameText";
+
+        TMP_Text actionNameText = actionName.GetComponent<TMP_Text>();
+        actionNameText.text = runningActionType;
+
+        Destroy(actionName.gameObject, 4.0f);
     }
 
     private void AddActionPointToGame(ActionPoint ap)
@@ -365,8 +405,6 @@ public class GameManager : Base.Singleton<GameManager>
         GameObject parentActionPointInScene = GameObject.Find(parentId);
 
         ActionPoint parentActionPoint = actionPoints.Find(x => x.Id.Equals(parentId));
-
-        Debug.LogError("Parent action point ID: " + parentActionPoint.Id);
 
         float moveActionByNumberOfExisting = 0.0f;
 
@@ -446,7 +484,7 @@ public class GameManager : Base.Singleton<GameManager>
         if (sceneObject != null)
         {
             string[] parts = sceneObject.Type.Split("_");
-            string objectTypeWithoutNumber = parts[0];
+            string objectTypeWithoutNumber = parts[0];   
             GameObject addedGameObject = null;
 
             switch (objectTypeWithoutNumber)
@@ -463,7 +501,7 @@ public class GameManager : Base.Singleton<GameManager>
                     break;
 
                 case "cylinder":
-                    addedGameObject = Instantiate(Resources.Load("Sphere") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
+                    addedGameObject = Instantiate(Resources.Load("Cylinder") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
                     addedGameObject.GetComponent<Image>().color = new Color32(255, 228, 0, 255);
                     break;
 
@@ -520,7 +558,7 @@ public class GameManager : Base.Singleton<GameManager>
     private Quaternion AREditorToSAROrientation(Orientation orientation)
     {
         Quaternion convertedOrientation = new Quaternion();
-        convertedOrientation.Set((float)orientation.X, (float)orientation.Y, (float)orientation.Z, (float)orientation.W);
+        convertedOrientation.Set(0f, 0f, (float)orientation.Z, (float)orientation.W);
         return convertedOrientation;
     }
 
