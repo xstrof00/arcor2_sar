@@ -55,12 +55,16 @@ public class GameManager : Base.Singleton<GameManager>
     public void OpenScene(Scene scene)
     {
         ShowInfoTextInGame(ScreenStateEnum.EditingScene);
+        ShowSceneOrProjectNameInGame(scene.Name);
         SpawnSceneInGame(scene);
     }
 
     public void OpenProject(Scene scene, Project project)
     {
+        DestroyObjectsInGame();
+        sceneObjects.Clear();
         ShowInfoTextInGame(ScreenStateEnum.EditingProject);
+        ShowSceneOrProjectNameInGame(project.Name);
         SpawnProjectInGame(scene, project);
     }
 
@@ -75,14 +79,7 @@ public class GameManager : Base.Singleton<GameManager>
 
     private void SpawnProjectInGame(Scene scene, Project project)
     {
-        foreach (var sceneObject in scene.Objects)
-        {
-            if (scene.Objects.Count != 0)
-            {
-                sceneObjects.Add(sceneObject);
-                AddSceneObjectToGame(sceneObject);
-            }
-        }
+        SpawnSceneInGame(scene);
 
         foreach (var ap in project.ActionPoints)
         {
@@ -125,9 +122,14 @@ public class GameManager : Base.Singleton<GameManager>
     {
         ShowPackageNameInGame();
 
-        foreach(var ap in packageInfo.Project.ActionPoints)
+        foreach (var ap in packageInfo.Project.ActionPoints)
         {
-            actionPoints.Add(ap);
+            if (packageInfo.Project.ActionPoints.Count != 0)
+            {
+                actionPoints.Add(ap);
+                //AddActionPointToGame(ap);                     //Adds action points to running program
+                //SpawnActionsInGame(ap.Actions, ap.Id);        //Adds action names to running program
+            }
         }
 
         foreach(var sceneObject in packageInfo.Scene.Objects)
@@ -138,13 +140,24 @@ public class GameManager : Base.Singleton<GameManager>
 
     private void ShowPackageNameInGame()
     {
-        GameObject packageName = Instantiate(Resources.Load("PackageNameText") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
+        GameObject packageName = Instantiate(Resources.Load("OpenedInstanceNameText") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
         packageName.transform.position = new Vector3(-4.4f, -1.3f, 0f);
         packageName.transform.rotation = Quaternion.Euler(0f, 0f, 180f);
         TMP_Text packageNameText = packageName.GetComponent<TMP_Text>();
 
         packageNameText.text = packageInfo.PackageName;
         packageNameText.color = UnityEngine.Color.white;
+    }
+
+    private void ShowSceneOrProjectNameInGame(string name)
+    {
+        GameObject instanceName = Instantiate(Resources.Load("OpenedInstanceNameText") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
+        instanceName.transform.position = new Vector3(-4.4f, -1.3f, 0f);
+        instanceName.transform.rotation = Quaternion.Euler(0f, 0f, 180f);
+        TMP_Text instanceNameText = instanceName.GetComponent<TMP_Text>();
+
+        instanceNameText.text = name;
+        instanceNameText.color = UnityEngine.Color.white;
     }
 
     private void ShowInfoTextInGame(ScreenStateEnum state)
@@ -385,7 +398,7 @@ public class GameManager : Base.Singleton<GameManager>
         TMP_Text actionNameText = actionName.GetComponent<TMP_Text>();
         actionNameText.text = runningActionType;
 
-        Destroy(actionName.gameObject, 4.0f);
+        Destroy(actionName.gameObject, 3.0f);
     }
 
     private void AddActionPointToGame(ActionPoint ap)

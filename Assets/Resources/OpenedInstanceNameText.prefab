@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 3410930344344446286}
   - component: {fileID: 8527270342523465462}
   m_Layer: 0
-  m_Name: PackageNameText
+  m_Name: OpenedInstanceNameText
   m_TagString: Prefab
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
