@@ -13,6 +13,7 @@ public class GameManager : Base.Singleton<GameManager>
     private List<ActionPoint> actionPoints = new List<ActionPoint>();
     private List<SceneObject> sceneObjects = new List<SceneObject>();
     internal PackageInfoData packageInfo;
+    private List<ObjectTypeMeta> objectTypes = new List<ObjectTypeMeta>();
 
     private enum ScreenStateEnum
     {
@@ -34,6 +35,8 @@ public class GameManager : Base.Singleton<GameManager>
         WebsocketManager.Instance.OnActionPointRemoved += ApRemove;
 
         WebsocketManager.Instance.OnObjectTypeUpdated += ObjectTypeUpdate;
+
+        WebsocketManager.Instance.OnObjectTypeAdded += AddedObjectType;
     }
 
     // Update is called once per frame
@@ -68,8 +71,11 @@ public class GameManager : Base.Singleton<GameManager>
         SpawnProjectInGame(scene, project);
     }
 
-    private void SpawnSceneInGame(Scene scene)
+    private async void SpawnSceneInGame(Scene scene)
     {
+        objectTypes = await WebsocketManager.Instance.GetObjectTypes();
+        
+
         foreach (var sceneObject in scene.Objects)
         {
             sceneObjects.Add(sceneObject);
@@ -499,12 +505,17 @@ public class GameManager : Base.Singleton<GameManager>
         UpdateSceneObjectInGame(sceneObject);
     }
 
+    public void AddedObjectType(object sender, ObjectTypesEventArgs args)
+    {
+        objectTypes.Add(args.ObjectTypes.FirstOrDefault());
+    }
+
     private void AddSceneObjectToGame(SceneObject sceneObject)
     {
         if (sceneObject != null)
         {
             string[] parts = sceneObject.Type.Split("_");
-            string objectTypeWithoutNumber = parts[0];   
+            string objectTypeWithoutNumber = parts[0];
             GameObject addedGameObject = null;
 
             switch (objectTypeWithoutNumber)
@@ -512,34 +523,59 @@ public class GameManager : Base.Singleton<GameManager>
                 case "DobotMagician":
                     addedGameObject = Instantiate(Resources.Load("DobotMagician") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
                     addedGameObject.GetComponent<Image>().color = new Color32(50, 255, 0, 255);
+                    addedGameObject.name = sceneObject.Id;
                     ShowDobotMagicianRange(addedGameObject);
                     break;
 
                 case "sphere":
                     addedGameObject = Instantiate(Resources.Load("Sphere") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
                     addedGameObject.GetComponent<Image>().color = new Color32(255, 228, 0, 255);
+                    ObjectTypeMeta sphereObjectType = objectTypes.Find(x => x.Type == sceneObject.Name);
+                    addedGameObject.transform.localScale = SetSphereSizeFromObjectType(sphereObjectType);
+                    addedGameObject.name = sceneObject.Id;
                     break;
 
                 case "cylinder":
                     addedGameObject = Instantiate(Resources.Load("Cylinder") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
                     addedGameObject.GetComponent<Image>().color = new Color32(255, 228, 0, 255);
+                    ObjectTypeMeta cylinderObjectType = objectTypes.Find(x => x.Type == sceneObject.Name);
+                    addedGameObject.transform.localScale = SetCylinderSizeFromObjectType(cylinderObjectType);
+                    addedGameObject.name = sceneObject.Id;
                     break;
 
                 case "cube":
                     addedGameObject = Instantiate(Resources.Load("Cube") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
                     addedGameObject.GetComponent<Image>().color = new Color32(255, 228, 0, 255);
+                    ObjectTypeMeta cubeObjectType = objectTypes.Find(x => x.Type == sceneObject.Name);
+                    addedGameObject.transform.localScale = SetCubeSizeFromObjectType(cubeObjectType);
+                    addedGameObject.name = sceneObject.Id;
                     break;
 
                 default:
                     break;
             }
-            if(addedGameObject != null)
+            if (addedGameObject != null)
             {
-                addedGameObject.name = sceneObject.Id;
                 SetSceneObjectPose(sceneObject);
             }
         }
     }
+
+    private Vector3 SetCubeSizeFromObjectType(ObjectTypeMeta objectType)
+    {
+        return new Vector3(10 * (float)objectType.ObjectModel.Box.SizeX, 10 * (float)objectType.ObjectModel.Box.SizeY, 0.0f);
+    }
+
+    private Vector3 SetSphereSizeFromObjectType(ObjectTypeMeta objectType)
+    {
+        return new Vector3(10 * (float)objectType.ObjectModel.Sphere.Radius, 10 * (float)objectType.ObjectModel.Sphere.Radius, 0.0f);
+    }
+
+    private Vector3 SetCylinderSizeFromObjectType(ObjectTypeMeta objectType)
+    {
+        return new Vector3(10 * (float)objectType.ObjectModel.Cylinder.Radius, 10 * (float)objectType.ObjectModel.Cylinder.Radius, 0.0f);
+    }
+
 
     private void UpdateSceneObjectInGame(SceneObject sceneObject)
     {

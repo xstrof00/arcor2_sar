@@ -746,7 +746,6 @@ namespace Base {
                 case IO.Swagger.Model.ChangedObjectTypes.ChangeTypeEnum.Add:
                     //ActionsManager.Instance.ActionsReady = false;
                     OnObjectTypeAdded?.Invoke(this, new ObjectTypesEventArgs(objectTypesChangedEvent.Data));
-
                     break;
                 case IO.Swagger.Model.ChangedObjectTypes.ChangeTypeEnum.Remove:
                     List<string> removed = new List<string>();
