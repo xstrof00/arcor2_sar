@@ -2,7 +2,6 @@ using Base;
 using IO.Swagger.Model;
 using Newtonsoft.Json;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
@@ -14,7 +13,7 @@ public class GameManager : Base.Singleton<GameManager>
     private List<SceneObject> sceneObjects = new List<SceneObject>();
     internal PackageInfoData packageInfo;
     private List<ObjectTypeMeta> objectTypes = new List<ObjectTypeMeta>();
-
+    
     private enum ScreenStateEnum
     {
         MainScreen,
@@ -34,9 +33,9 @@ public class GameManager : Base.Singleton<GameManager>
         WebsocketManager.Instance.OnActionPointBaseUpdated += ApChangeUpdateBase;
         WebsocketManager.Instance.OnActionPointRemoved += ApRemove;
 
+        WebsocketManager.Instance.OnObjectTypeAdded += AddedObjectType;
         WebsocketManager.Instance.OnObjectTypeUpdated += ObjectTypeUpdate;
 
-        WebsocketManager.Instance.OnObjectTypeAdded += AddedObjectType;
     }
 
     // Update is called once per frame
@@ -193,7 +192,7 @@ public class GameManager : Base.Singleton<GameManager>
         switch (state)
         {
             case ScreenStateEnum.MainScreen:
-                stateInfoText.text = "Main screen";
+                stateInfoText.text = "Stand-by";
                 stateInfoText.color = new Color32(255, 255, 255, 255);
                 break;
 
@@ -216,7 +215,7 @@ public class GameManager : Base.Singleton<GameManager>
                 stateInfoText.text = "Pausing program";
                 stateInfoText.color = new Color32(255, 0, 100, 255);
 
-                smallInfoText.text = "Please wait, robot is finishing action";
+                smallInfoText.text = "Please wait for the action to finish";
                 smallInfoText.color = new Color32(255, 255, 255, 255);
                 break;
 
@@ -229,7 +228,7 @@ public class GameManager : Base.Singleton<GameManager>
                 stateInfoText.text = "Stopping program";
                 stateInfoText.color = new Color32(255, 0, 100, 255);
 
-                smallInfoText.text = "Please wait, robot is finishing action";
+                smallInfoText.text = "Please wait for the action to finish";
                 smallInfoText.color = new Color32(255, 255, 255, 255);
                 break;
 
@@ -398,8 +397,8 @@ public class GameManager : Base.Singleton<GameManager>
             actionNamePosition = parentActionPlace.transform.position + new Vector3(0.0f, 0.6f, 0.0f);
         }
 
-        GameObject actionName = Instantiate(Resources.Load("ActionNameText") as GameObject, actionNamePosition, Quaternion.Euler(0, 0, 180), GameObject.FindGameObjectWithTag("Canvas").transform);
-        actionName.name = "ActionNameText";
+        GameObject actionName = Instantiate(Resources.Load("ActionTextRun") as GameObject, actionNamePosition, Quaternion.Euler(0, 0, 180), GameObject.FindGameObjectWithTag("Canvas").transform);
+        actionName.name = "ActionTextRun";
 
         TMP_Text actionNameText = actionName.GetComponent<TMP_Text>();
         actionNameText.text = runningActionType;
@@ -415,12 +414,12 @@ public class GameManager : Base.Singleton<GameManager>
         if (!string.IsNullOrEmpty(ap.Parent))
         {
             parent = GameObject.Find(ap.Parent);
-            newActionPoint = Instantiate(Resources.Load("ActionPointPrefab") as GameObject, Vector3.zero, Quaternion.identity, parent.transform);
+            newActionPoint = Instantiate(Resources.Load("ActionPoint") as GameObject, Vector3.zero, Quaternion.identity, parent.transform);
             newActionPoint.transform.localPosition = apPosition;
         }
         else
         {
-            newActionPoint = Instantiate(Resources.Load("ActionPointPrefab") as GameObject, apPosition, Quaternion.identity, parent.transform);
+            newActionPoint = Instantiate(Resources.Load("ActionPoint") as GameObject, apPosition, Quaternion.identity, parent.transform);
         }
         newActionPoint.name = ap.Id;
         newActionPoint.GetComponent<Image>().color = new Color32(70, 0, 255, 255);

@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 6040644297222242438}
   - component: {fileID: 1941181945846231113}
   m_Layer: 0
-  m_Name: ActionPointPrefab
+  m_Name: ActionPoint
   m_TagString: Prefab
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
