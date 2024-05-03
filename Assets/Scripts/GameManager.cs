@@ -545,7 +545,7 @@ public class GameManager : Base.Singleton<GameManager>
                 case "cube":
                     addedGameObject = Instantiate(Resources.Load("Cube") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
                     addedGameObject.GetComponent<Image>().color = new Color32(255, 228, 0, 255);
-                    ObjectTypeMeta cubeObjectType = objectTypes.Find(x => x.Type == sceneObject.Name);
+                    ObjectTypeMeta cubeObjectType = objectTypes.Find(x => x.Type == sceneObject.Type);
                     addedGameObject.transform.localScale = SetCubeSizeFromObjectType(cubeObjectType);
                     addedGameObject.name = sceneObject.Id;
                     break;
