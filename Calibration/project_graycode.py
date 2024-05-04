@@ -29,7 +29,7 @@ kinectPose = {
 
 def takePicture():
     cap = cv2.VideoCapture(-1)
-    time.sleep(0.1)
+    time.sleep(0.5)
 
     if not cap.isOpened():
         print("Error: Cannot open the camera.")
@@ -93,7 +93,7 @@ for filename in sorted(os.listdir(inputFolder)):
     imageSurface = pygame.transform.scale(imageSurface, displaySurface.get_size())
     displaySurface.blit(imageSurface, (0, 0))
     pygame.display.flip()
-    time.sleep(0.2)
+    time.sleep(0.6)
 
     result = takePictureViaAPI()
     
