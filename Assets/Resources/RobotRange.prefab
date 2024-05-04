@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8770730842260278084}
   m_Layer: 0
-  m_Name: DobotMagicianRange
+  m_Name: RobotRange
   m_TagString: Prefab
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

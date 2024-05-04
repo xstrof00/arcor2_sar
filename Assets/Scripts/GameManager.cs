@@ -132,8 +132,6 @@ public class GameManager : Base.Singleton<GameManager>
             if (packageInfo.Project.ActionPoints.Count != 0)
             {
                 actionPoints.Add(ap);
-                //AddActionPointToGame(ap);                     //Adds action points to running program
-                //SpawnActionsInGame(ap.Actions, ap.Id);        //Adds action names to running program
             }
         }
 
@@ -270,7 +268,7 @@ public class GameManager : Base.Singleton<GameManager>
     {
         ActionPoint updatedAp = actionPoints.Find(x => x.Id == args.ActionPoint.Id);
         updatedAp.Position = args.ActionPoint.Position;
-        UpdateActionPointPoistionInGame(args.ActionPoint.Id);
+        UpdateActionPointPositionInGame(args.ActionPoint.Id);
     }
 
     private void ApRemove(object sender, StringEventArgs args)
@@ -350,6 +348,21 @@ public class GameManager : Base.Singleton<GameManager>
         DestroyObjectInGame(action.Id);
     }
 
+    public void ActionBaseUpdated(BareAction action)
+    {
+        ActionPoint parentActionPoint = actionPoints.FirstOrDefault(x => x.Actions.Any(y => y.Id == action.Id));
+
+        if (parentActionPoint != null)
+        {
+            IO.Swagger.Model.Action updatedBaseAction = parentActionPoint.Actions.FirstOrDefault(x => x.Id == action.Id);
+            updatedBaseAction.Name = action.Name;
+
+            GameObject actionInGame = GameObject.Find(action.Id);
+            TMP_Text actionText = actionInGame.GetComponent<TMP_Text>();
+            actionText.text = updatedBaseAction.Name;
+        }
+    }
+
     public void ActionStateBefore(ActionStateBeforeData data)
     {
         ShowActionPlaceInGame(data);
@@ -409,18 +422,9 @@ public class GameManager : Base.Singleton<GameManager>
     private void AddActionPointToGame(ActionPoint ap)
     {
         Vector3 apPosition = AREditorToSARPosition(ap.Position);
+
         GameObject parent = GameObject.FindGameObjectWithTag("Canvas");
-        GameObject newActionPoint;
-        if (!string.IsNullOrEmpty(ap.Parent))
-        {
-            parent = GameObject.Find(ap.Parent);
-            newActionPoint = Instantiate(Resources.Load("ActionPoint") as GameObject, Vector3.zero, Quaternion.identity, parent.transform);
-            newActionPoint.transform.localPosition = apPosition;
-        }
-        else
-        {
-            newActionPoint = Instantiate(Resources.Load("ActionPoint") as GameObject, apPosition, Quaternion.identity, parent.transform);
-        }
+        GameObject newActionPoint = Instantiate(Resources.Load("ActionPoint") as GameObject, apPosition, Quaternion.identity, parent.transform);
         newActionPoint.name = ap.Id;
         newActionPoint.GetComponent<Image>().color = new Color32(70, 0, 255, 255);
     }
@@ -470,14 +474,15 @@ public class GameManager : Base.Singleton<GameManager>
         }
     }
 
-    private void UpdateActionPointPoistionInGame(string id)
+    private void UpdateActionPointPositionInGame(string id)
     {
         ActionPoint actionPoint = actionPoints.Find(x => x.Id == id);
         GameObject apInScene = GameObject.Find(id);
 
         if (!string.IsNullOrEmpty(actionPoint.Parent))
         {
-            apInScene.transform.localPosition = AREditorToSARPosition(actionPoint.Position);
+            GameObject parent= GameObject.Find(actionPoint.Parent);
+            apInScene.transform.position = AREditorToSARPosition(actionPoint.Position) + parent.transform.position;
         }
         else
         {
@@ -520,10 +525,18 @@ public class GameManager : Base.Singleton<GameManager>
             switch (objectTypeWithoutNumber)
             {
                 case "DobotMagician":
-                    addedGameObject = Instantiate(Resources.Load("DobotMagician") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
+                    addedGameObject = Instantiate(Resources.Load("DobotMagician") as GameObject, Vector3.zero, 
+                        Quaternion.Euler(0f, 0f, 270f), GameObject.FindGameObjectWithTag("Canvas").transform);
                     addedGameObject.GetComponent<Image>().color = new Color32(50, 255, 0, 255);
                     addedGameObject.name = sceneObject.Id;
                     ShowDobotMagicianRange(addedGameObject);
+                    break;
+
+                case "DobotM1":
+                    addedGameObject = Instantiate(Resources.Load("DobotM1") as GameObject, GameObject.FindGameObjectWithTag("Canvas").transform);
+                    addedGameObject.GetComponent<Image>().color = new Color32(0, 30, 255, 255);
+                    addedGameObject.name = sceneObject.Id;
+                    ShowDobotM1Range(addedGameObject);
                     break;
 
                 case "sphere":
@@ -598,9 +611,16 @@ public class GameManager : Base.Singleton<GameManager>
 
     private void ShowDobotMagicianRange(GameObject dobotMagician)
     {
-        GameObject dobotMagicianRange = Instantiate(Resources.Load("DobotMagicianRange") as GameObject, dobotMagician.transform);
-        DrawCircle(dobotMagicianRange, 3.2f, 0.01f);
+        GameObject dobotMagicianRange = Instantiate(Resources.Load("RobotRange") as GameObject, dobotMagician.transform);
+        DrawCircle(dobotMagicianRange, 3.2f, 0.01f, new Color32(50, 255, 0, 255));
         dobotMagicianRange.transform.Rotate(90f, 0, 0);
+    }
+
+    private void ShowDobotM1Range(GameObject dobotM1)
+    {
+        GameObject dobotM1Range = Instantiate(Resources.Load("RobotRange") as GameObject, dobotM1.transform);
+        DrawCircle(dobotM1Range, 4.0f, 0.01f, new Color32(0, 30, 255, 255));
+        dobotM1Range.transform.Rotate(90f, 0, 0);
     }
 
     private Vector3 AREditorToSARPosition(Position position)
@@ -625,7 +645,7 @@ public class GameManager : Base.Singleton<GameManager>
     }
 
     //Following code in this function was adapted from: https://www.loekvandenouweland.com/content/use-linerenderer-in-unity-to-draw-a-circle.html
-    private void DrawCircle(GameObject container, float radius, float lineWidth)
+    private void DrawCircle(GameObject container, float radius, float lineWidth, Color32 color)
     {
         var segments = 360;
         var line = container.AddComponent<LineRenderer>();
@@ -645,7 +665,7 @@ public class GameManager : Base.Singleton<GameManager>
 
         line.SetPositions(points);
         line.material = new Material(Shader.Find("Sprites/Default"));
-        line.startColor = new Color32(50, 255, 0, 255);
-        line.endColor = new Color32(50, 255, 0, 255);
+        line.startColor = color;
+        line.endColor = color;
     }
 }

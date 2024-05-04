@@ -786,7 +786,7 @@ namespace Base {
                     //ProjectManager.Instance.ActionUpdated(actionUpdate.data);
                     break;
                 case IO.Swagger.Model.ActionChanged.ChangeTypeEnum.Updatebase:
-                    //ProjectManager.Instance.ActionBaseUpdated(actionChanged.Data);
+                    GameManager.Instance.ActionBaseUpdated(actionChanged.Data);
                     break;
                 default:
                     throw new NotImplementedException();
