@@ -51,7 +51,7 @@ python project_graycode.py <projector_pixel_height> <projector_pixel_width>
 python project_graycode.py 1080 1920
 ```
 
-When the script finishes, move the chessboard, so that it is facing the camera in a different angle and with a different attitude (possibly in a different location) than before and run the script again.
+When the script finishes, move the chessboard, so that it is facing the camera at a different angle and with a different attitude (possibly in a different location) than before and run the script again.
 
 Repeat this whole process at least 5 times to improve the calibration accuracy.
 
