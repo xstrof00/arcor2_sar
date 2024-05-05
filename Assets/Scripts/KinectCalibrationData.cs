@@ -1,3 +1,5 @@
+//author: Jakub Štrof
+
 using System.Globalization;
 using System.Linq;
 using System.Xml;

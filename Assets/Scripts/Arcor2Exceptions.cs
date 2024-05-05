@@ -1,3 +1,8 @@
+/*********************************************************************
+* This class was taken from the AREditor repository: https://github.com/robofit/arcor2_areditor
+*
+**********************************************************************/
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;

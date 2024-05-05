@@ -1,3 +1,5 @@
+//author: Jakub Štrof
+
 using Base;
 using UnityEngine;
 using static System.Math;

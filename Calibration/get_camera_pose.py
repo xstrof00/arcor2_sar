@@ -1,3 +1,5 @@
+# author: Jakub Štrof
+
 import time
 import requests
 import io

@@ -1,4 +1,7 @@
-//Tøída pøevzatá z AREditoru
+/*********************************************************************
+* This class was taken from the AREditor repository: https://github.com/robofit/arcor2_areditor
+*
+**********************************************************************/
 
 
 using UnityEngine;

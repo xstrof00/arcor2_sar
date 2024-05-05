@@ -1,3 +1,5 @@
+//author: Jakub Štrof
+
 using Base;
 using IO.Swagger.Model;
 using Newtonsoft.Json;

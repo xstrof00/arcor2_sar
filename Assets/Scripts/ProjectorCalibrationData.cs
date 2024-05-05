@@ -1,4 +1,6 @@
-﻿using System.Xml;
+﻿//author: Jakub Štrof
+
+using System.Xml;
 using UnityEngine;
 using System.Globalization;
 using System.Linq;
