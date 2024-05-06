@@ -115,7 +115,7 @@ def parseCamIntMatrix(camIntMatrix):
     return numbers
 
 def getCamDistCoefficients():
-    xmlTree = ET.parse('calibration_result.xml')
+    xmlTree = ET.parse('../Assets/Resources/calibration_result.xml')
     root = xmlTree.getroot()
     camDistCoeffs = root.find('cam_dist').findtext('data')
     camDistCoeffsString = str(camDistCoeffs)
