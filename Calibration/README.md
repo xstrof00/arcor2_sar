@@ -93,7 +93,7 @@ MORENO, Daniel; TAUBIN, Gabriel. Simple, accurate, and robust projector-camera c
 # Kinect calibration
 
 After using the procam-calibration method, you can calibrate the Kinect aswell.
-But first, make sure the Kinect can "see" all of the ArUco markers on the table. The calibration accuracy is better with more markers visible. If it's not possible, at least the central should be visible.
+But first, make sure all of the ArUco markers on the table are visible for the Kinect. The calibration accuracy is better with more markers visible. If it's not possible, at least the central marker should be visible.
 
 Then, you can run the following command in the terminal, to get the Kinect position and orientation.
 
