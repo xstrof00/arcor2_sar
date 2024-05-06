@@ -80,3 +80,7 @@ Calibration/old_captures
 .vs
 Assets/Resources/arucomarker_position.txt
 Assets/Resources/arucomarker_position.txt.meta
+Calibration/calibration_result.xml
+Calibration/kinectCalibrationData.json
+Assets/Resources/calibration_result.xml
+Assets/Resources/kinectCalibrationData.json
