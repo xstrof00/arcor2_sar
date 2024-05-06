@@ -31,10 +31,10 @@ This repository provides python scripts to calibrate projector-camera system usi
 Open your terminal and type the following command.
 
 ```sh
-python gen_graycode_imgs.py <projector_pixel_height> <projector_pixel_width> [-graycode_step <graycode_step(default=1)>]
+python3 gen_graycode_imgs.py <projector_pixel_height> <projector_pixel_width> [-graycode_step <graycode_step(default=1)>]
 
 # example
-python gen_graycode_imgs.py 1080 1920 -graycode_step 4
+python3 gen_graycode_imgs.py 1080 1920 -graycode_step 4
 ```
 
 Generated images will be stored in `./graycode_pattern/`.
@@ -47,10 +47,10 @@ If you get moire pattern in the captured images in the next step, increase this 
 Set up your system and place a chessboard in front of the projector and camera. Then, run the following command in the terminal:
 
 ```sh
-python project_graycode.py <projector_pixel_height> <projector_pixel_width>
+python3 project_graycode.py <projector_pixel_height> <projector_pixel_width>
 
 # example
-python project_graycode.py 1080 1920
+python3 project_graycode.py 1080 1920
 ```
 
 When the script finishes, move the chessboard, so that it is facing the camera at a different angle and with a different attitude (possibly in a different location) than before and run the script again.
@@ -62,10 +62,10 @@ Repeat this whole process at least 5 times to improve the calibration accuracy.
 After the previous steps, run the following command.
 
 ```sh
-python calibrate.py <projector_pixel_height> <projector_pixel_width> <num_chess_corners_vert> <num_chess_corners_hori> <chess_block_size> <graycode_step> [-black_thr <black_thr(default=40)>] [-white_thr <white_thr(default=5)>][-camera <camera_parameter_json>]
+python3 calibrate.py <projector_pixel_height> <projector_pixel_width> <num_chess_corners_vert> <num_chess_corners_hori> <chess_block_size> <graycode_step> [-black_thr <black_thr(default=40)>] [-white_thr <white_thr(default=5)>][-camera <camera_parameter_json>]
 
 # example
-python ../calibrate.py 1080 1920 9 6 40 4 -black_thr 40 -white_thr 5
+python3 calibrate.py 1080 1920 9 6 40 4 -black_thr 40 -white_thr 5
 ```
 
 `chess_block_size` means the length (mm cm m) of a block on the chessboard.

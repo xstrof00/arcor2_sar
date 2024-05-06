@@ -99,7 +99,7 @@ def takePicture():
         print("Error occured while taking the picture.")
 
 def getCamIntrinsics():
-    xmlTree = ET.parse('calibration_result.xml')
+    xmlTree = ET.parse('../Assets/Resources/calibration_result.xml')
     root = xmlTree.getroot()
     camInt = root.find('cam_int').findtext('data')
     camIntString = str(camInt)
