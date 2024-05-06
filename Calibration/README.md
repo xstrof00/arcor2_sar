@@ -4,6 +4,8 @@ First, procam-calibration method has to be used, to get the calibration paramete
 
 (Voluntary) Second, if you are calibrating the Kinect in the [ROBO@FIT lab](https://www.fit.vut.cz/research/group/robo/equipment/.cs), you can follow the second guide to calibrate the Kinect aswell.
 
+For both calibrations, it is necessary to have the Kinect service running.
+
 # procam-calibration
 
 This calibration method, as well as the following documentation, was taken from the [https://github.com/kamino410/procam-calibration](https://github.com/kamino410/procam-calibration) and edited.
