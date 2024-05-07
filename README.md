@@ -4,19 +4,31 @@ This repository contains user interface, based on projected augmented reality, w
 Video, showcasing this project is published here: https://youtu.be/wQrgCxiG_Vg?si=mBBA77-IEYMHNidJ
 
 Created scripts:
+
   GameManager.cs
+
   KinectCalibrationData.cs
+
   ProjectorCalibrationData.cs
+
   TransformKinect.cs
+
   TransformProjector.cs
+
   get_camera_pose.py
+
   project_graycode.py
 
 Edited scripts (or taken over without editing):
+
   Arcor2Exceptions.cs
+
   Singleton.cs
+
   WebsocketManager.cs
+
   gen_graycode_imgs.py
+  
   calibrate.py
 
 ## Usage
